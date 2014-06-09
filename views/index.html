@@ -5,6 +5,27 @@
     <title>Asteroids</title>
   </head>
   <body>
-    Hello world
+    <div class="container">
+      <header>
+	<h1>Asteroids</h1>
+      </header>
+
+      <div class="game-container">
+	<canvas id="game-canvas" width="300" height="400">
+	  Canvas not supported.
+	</canvas>
+      </div>
+
+      <footer>
+	Koalah
+      </footer>
+      
+      <script type="text/javascript" src="/js/Map.js"></script>
+      <script type="text/javascript" src="/js/Game.js"></script>
+      <script type="text/javascript">
+	document.game = new Game();
+	document.game.Run();
+      </script>
+    </div>
   </body>
 </html>
