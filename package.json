@@ -1,0 +1,23 @@
+{
+  "name": "Asteroids",
+  "version": "0.0.0",
+  "description": "Asteroids game for the Koalah game platform",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:kwong22/asteroids.git"
+  },
+  "keywords": [
+    "asteroids",
+    "game"
+  ],
+  "author": "Kelvin Wong",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kwong22/asteroids/issues"
+  },
+  "homepage": "https://github.com/kwong22/asteroids"
+}
