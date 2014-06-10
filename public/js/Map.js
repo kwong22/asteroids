@@ -5,6 +5,16 @@ function Map() {
     this.width_ = 300;
     this.height_ = 400;
     this.player_ = null;
+
+    this.chargeThresholdTime = 1000;
+    this.startChargeTime = 0;
+    this.isCharging = false;
+    this.isCharged = false;
+
+    this.startTime = 0;
+    this.currentTime = 0;
+    this.previousTime = 0;
+
     this.isLoaded = false;
 
     this.loadMap = function() {
@@ -18,18 +28,25 @@ function Map() {
 
 	// Test objects
 	this.asteroids_.push(new Asteroid(new Position(10,10), new PolarVector(2, Math.PI / 4), 8, 2));
+
+	this.startTime = (new Date).getTime();
+	this.currentTime = (new Date).getTime();
+	this.previousTime = (new Date).getTime();
 	
 	this.isLoaded = true;
     }
 
     this.aimBlaster = function(location) {
 	this.updateBlasterDirection(location);
+	if (!this.isCharging) {
+	    this.isCharging = true;
+	    this.startChargeTime = (new Date).getTime();
+	}
     }
 
     this.updateBlasterDirection = function(location) {
 	var dx = location.x - this.player_.x;
 	var dy = location.y - this.player_.y;
-	console.log(dx, dy);
 
 	if (dx > 0) {
             var theta = (Math.atan(dy / dx)) % (2 * Math.PI); // The codomain of atan is -pi/2 to pi/2
@@ -41,12 +58,28 @@ function Map() {
     }
 
     this.createBlast = function(location) {
-	this.updateBlasterDirection(location)
+	this.updateBlasterDirection(location);
 	this.blasts_.push(new Blast(new Position(this.player_.x, this.player_.y),
-				    new PolarVector(4, this.player_.direction), 4));
+				    this.player_.direction,
+				    this.isCharged));
+	this.isCharged = false;
+	this.isCharging = false;
+	this.startChargeTime = 0;
     }
 
     this.update = function() {
+	
+	this.currentTime = (new Date).getTime();
+
+	if (this.isCharging) {
+	    if (this.startChargeTime != 0) {
+		if (this.currentTime - this.startChargeTime >= this.chargeThresholdTime) {
+		    this.isCharged = true;
+		    this.startChargeTime = 0;
+		}
+	    }
+	}
+
 	for (var i in this.asteroids_) {
 	    var ast = this.asteroids_[i];
 	    if (ast.y + ast.radius < 0) {
@@ -79,6 +112,8 @@ function Map() {
 	    }
 	    b.updatePosition();
 	}
+
+	this.previousTime = this.currentTime;
     }
 
     this.draw = function(canvasContext) {
@@ -88,7 +123,7 @@ function Map() {
 
 	// Draw player
 	canvasContext.fillStyle = '#369';
-	canvasContext.fillRect(this.player_.x, this.player_.y, 4, 4);
+	canvasContext.fillRect(this.player_.x, this.player_.y, 8, 8);
 
 	// Draw asteroids
 	for (var i in this.asteroids_) {
@@ -106,6 +141,42 @@ function Map() {
 	    canvasContext.arc(b.x, b.y, b.radius, 0, 2 * Math.PI, true);
 	    canvasContext.fillStyle = '#f90';
 	    canvasContext.fill();
+	}
+
+	// Draw charge meter
+	var outerOffset = 8;
+	var innerOffset = 4;
+	var borderWidth = 2;
+	var barHeight = 16;
+	var barLength = 100;
+	var outerWidth = borderWidth + 2 * innerOffset + barLength;
+	var outerHeight = borderWidth + 2 * innerOffset + barHeight;
+
+	// Draw the outer border
+	canvasContext.lineWidth = borderWidth;
+	canvasContext.strokeStyle = '#fff';
+	canvasContext.strokeRect(outerOffset - 0.5 * borderWidth,
+				 this.height_ - outerOffset - outerHeight + 0.5 * borderWidth,
+				 outerWidth,
+				 outerHeight);
+
+	// Draw the inner bar if charging or charged
+	if (this.isCharging) {
+	    if (this.isCharged) {
+		canvasContext.fillStyle = '#fff';
+		canvasContext.fillRect(outerOffset + innerOffset,
+				       this.height_ - outerOffset - innerOffset - barHeight,
+				       barLength,
+				       barHeight);
+	    } else {
+		var amountFilled = (this.currentTime - this.startChargeTime) / this.chargeThresholdTime;
+		amountFilled = (amountFilled > 1) ? 1 : amountFilled;
+		canvasContext.fillStyle = '#fff';
+		canvasContext.fillRect(outerOffset + innerOffset,
+				       this.height_ - outerOffset - innerOffset - barHeight,
+				       barLength * amountFilled,
+				       barHeight);
+	    }
 	}
     }
 }
