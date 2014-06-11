@@ -13,9 +13,9 @@ function Game() {
 
     this.initialize = function() {
 	
-	inputManager_.on('aim', document.game.aim.bind(this));
-	inputManager_.on('move', document.game.move.bind(this));
-	inputManager_.on('shoot', document.game.shoot.bind(this));
+	inputManager_.on('touchStart', document.game.handleTouchStart.bind(this));
+	inputManager_.on('touchMove', document.game.handleTouchMove.bind(this));
+	inputManager_.on('touchEnd', document.game.handleTouchEnd.bind(this));
 
 	map_ = new Map();
 
@@ -64,15 +64,15 @@ function Game() {
 	map_.update();
     }
     
-    this.aim = function(location) {
+    this.handleTouchStart = function(location) {
 	map_.aimBlaster(this.getCanvasCoordinates(location));
     }
 
-    this.move = function(location) {
+    this.handleTouchMove = function(location) {
 	map_.updateBlasterDirection(this.getCanvasCoordinates(location));
     }
 
-    this.shoot = function(location) {
+    this.handleTouchEnd = function(location) {
 	map_.createBlast(this.getCanvasCoordinates(location));
     }
 

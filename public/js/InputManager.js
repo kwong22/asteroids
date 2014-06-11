@@ -44,7 +44,7 @@ InputManager.prototype.listen = function() {
 	touchStartClientX = event.touches[0].clientX;
 	touchStartClientY = event.touches[0].clientY;
 
-	self.emit('aim', new Position(touchStartClientX, touchStartClientY));
+	self.emit('touchStart', new Position(touchStartClientX, touchStartClientY));
 	
 	event.preventDefault();
     });
@@ -53,7 +53,7 @@ InputManager.prototype.listen = function() {
 	touchClientX = event.touches[0].clientX;
 	touchClientY = event.touches[0].clientY;
 
-	self.emit('move', new Position(touchClientX, touchClientY));
+	self.emit('touchMove', new Position(touchClientX, touchClientY));
 
 	event.preventDefault();
     });
@@ -68,6 +68,6 @@ InputManager.prototype.listen = function() {
 	touchEndClientX = event.changedTouches[0].clientX;
 	touchEndClientY = event.changedTouches[0].clientY;
 
-	self.emit('shoot', new Position(touchEndClientX, touchEndClientY));
+	self.emit('touchEnd', new Position(touchEndClientX, touchEndClientY));
     });
 };

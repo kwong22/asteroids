@@ -5,6 +5,9 @@ function Asteroid(position, velocity, radius, health) {
     this.radius = radius;
     this.health = health;
 
+    this.density = 4;
+    this.mass = this.density * Math.pow(this.radius, 3);
+
     this.updatePosition = function() {
 	this.x += this.v.getX();
 	this.y += this.v.getY();
@@ -28,15 +31,21 @@ function Blast(position, direction, isCharged) {
 	this.v = new PolarVector(4, this.direction);
     }
 
+    this.density = 5;
+    this.mass = this.density * Math.pow(this.radius, 3);
+
     this.updatePosition = function() {
 	this.x += this.v.getX();
 	this.y += this.v.getY();
     }
 }
 
-function Player(position, radius, direction) {
+function Player(position, radius, shieldRadius, shieldHealth, direction) {
     this.x = position.x;
     this.y = position.y;
-    this.shieldRadius = radius;
+    this.radius = radius;
+    this.shieldRadius = shieldRadius;
+    this.shieldHealth = shieldHealth;
+    this.isShielded = (this.shieldHealth > 0);
     this.direction = direction;
 }
