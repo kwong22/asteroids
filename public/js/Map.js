@@ -12,6 +12,14 @@ function Map() {
     this.isCharging = false;
     this.isCharged = false;
 
+    this.currentHeat = 0;
+    this.blastHeat = 20;
+    this.maxHeat = 100;
+    this.cooldownRate = 0.5;
+    this.isOverheated = false;
+    this.overheatDuration = 2000;
+    this.startOverheatTime = 0;
+
     this.startTime = 0;
     this.currentTime = 0;
     this.previousTime = 0;
@@ -21,6 +29,7 @@ function Map() {
     this.isLoaded = false;
 
     this.loadMap = function() {
+
 	this.map_ = null;
 
 	this.score = 0;
@@ -40,6 +49,14 @@ function Map() {
 	this.asteroids_.push(new Asteroid(new Position(70,70), new PolarVector(2, Math.PI / 1), 12, 2));
 	this.asteroids_.push(new Asteroid(new Position(90,90), new PolarVector(2, Math.PI * 3 / 4), 12, 2));
 
+	this.startChargeTime = 0;
+	this.isCharging = false;
+	this.isCharged = false;
+
+	this.currentHeat = 0;
+	this.isOverheated = false;
+	this.startOverheatTime = 0;
+
 	this.startTime = (new Date).getTime();
 	this.currentTime = (new Date).getTime();
 	this.previousTime = (new Date).getTime();
@@ -51,7 +68,7 @@ function Map() {
 
     this.aimBlaster = function(location) {
 	this.updateBlasterDirection(location);
-	if (!this.isCharging) {
+	if (!this.isCharging && !this.isOverheated) {
 	    this.isCharging = true;
 	    this.startChargeTime = (new Date).getTime();
 	}
@@ -65,7 +82,18 @@ function Map() {
 
     this.createBlast = function(location) {
 	this.updateBlasterDirection(location);
-	this.blasts_.push(new Blast(new Position(this.player_.x, this.player_.y), this.player_.direction, this.isCharged));
+
+	if (!this.isOverheated) {
+	    this.blasts_.push(new Blast(new Position(this.player_.x, this.player_.y), this.player_.direction, this.isCharged));
+
+	    this.currentHeat += this.blastHeat;
+	    if (this.currentHeat > this.maxHeat) {
+		this.currentHeat = this.maxHeat;
+		this.isOverheated = true;
+		this.startOverheatTime = (new Date).getTime();
+	    }
+	}
+
 	this.isCharged = false;
 	this.isCharging = false;
 	this.startChargeTime = 0;
@@ -82,6 +110,22 @@ function Map() {
 		    this.startChargeTime = 0;
 		}
 	    }
+	}
+
+	if (this.isOverheated) {
+	    if (!(this.currentTime - this.startOverheatTime < this.overheatDuration)) {
+		if (this.currentHeat >= this.cooldownRate) {
+		    this.currentHeat -= this.cooldownRate;
+		} else {
+		    this.currentHeat = 0;
+		    this.isOverheated = false;
+		    this.startOverheatTime = 0;
+		}
+	    }
+	} else if (this.currentHeat >= this.cooldownRate) {
+	    this.currentHeat -= this.cooldownRate;
+	} else {
+	    this.currentHeat = 0;
 	}
 
 	for (var i in this.asteroids_) {
@@ -165,6 +209,9 @@ function Map() {
 	canvasContext.fillStyle = '#333';
 	canvasContext.fillRect(0, 0, this.width_, this.height_);
 
+	// Draw charge meter
+	this.drawChargeMeter(canvasContext);
+
 	// Draw player
 	var v1 = new PolarVector(this.player_.radius * 4 / 3, this.player_.direction);
 	var v2 = new PolarVector(this.player_.radius, this.player_.direction + 2 * Math.PI / 3);
@@ -213,8 +260,40 @@ function Map() {
 	    this.drawShieldHealth(canvasContext);
 	}
 
-	// Draw charge meter
-	this.drawChargeMeter(canvasContext);
+	// Draw heat meter
+	this.drawHeatMeter(canvasContext);
+    }
+
+    this.drawChargeMeter = function(canvasContext) {
+	var innerOffset = 4;
+	var maxAngle = Math.PI;
+	var amountFilled = 0;
+
+	// Draw if charging or charged
+	if (this.isCharging) {
+	    if (this.isCharged) {
+		amountFilled = 1;
+	    } else {
+		amountFilled = (this.currentTime - this.startChargeTime) / this.chargeThresholdTime;
+		amountFilled = (amountFilled > 1) ? 1 : amountFilled;
+	    }
+	    var sideAngle = maxAngle / 2 * amountFilled;
+
+	    var v1 = new PolarVector(this.player_.shieldRadius - innerOffset, (this.player_.direction - sideAngle) % (2 * Math.PI));
+	    var v2 = new PolarVector(this.player_.shieldRadius - innerOffset, (this.player_.direction + sideAngle) % (2 * Math.PI));
+
+	    canvasContext.beginPath();
+	    canvasContext.moveTo(this.player_.x, this.player_.y);
+	    canvasContext.lineTo(this.player_.x + v1.getX(), this.player_.y + v1.getY());
+	    canvasContext.lineTo(this.player_.x + v2.getX(), this.player_.y + v2.getY());
+	    canvasContext.closePath();
+	    canvasContext.fillStyle = '#fff';
+	    canvasContext.fill();
+
+	    canvasContext.beginPath();
+	    canvasContext.arc(this.player_.x, this.player_.y, this.player_.shieldRadius - innerOffset, (this.player_.direction - sideAngle) % (2 * Math.PI), (this.player_.direction + sideAngle) % (2 * Math.PI));
+	    canvasContext.fill();
+	}
     }
 
     this.drawScore = function(canvasContext) {
@@ -236,12 +315,12 @@ function Map() {
 	}
     }
 
-    this.drawChargeMeter = function(canvasContext) {
+    this.drawHeatMeter = function(canvasContext) {
 	var outerOffset = 8;
 	var innerOffset = 4;
 	var borderWidth = 2;
 	var barHeight = 16;
-	var barLength = 100;
+	var barLength = this.width_ - 2 * outerOffset - 2 * innerOffset;
 	var outerWidth = borderWidth + 2 * innerOffset + barLength;
 	var outerHeight = borderWidth + 2 * innerOffset + barHeight;
 
@@ -253,23 +332,17 @@ function Map() {
 				 outerWidth,
 				 outerHeight);
 
-	// Draw the inner bar if charging or charged
-	if (this.isCharging) {
-	    if (this.isCharged) {
-		canvasContext.fillStyle = '#fff';
-		canvasContext.fillRect(outerOffset + innerOffset,
-				       this.height_ - outerOffset - innerOffset - barHeight,
-				       barLength,
-				       barHeight);
-	    } else {
-		var amountFilled = (this.currentTime - this.startChargeTime) / this.chargeThresholdTime;
-		amountFilled = (amountFilled > 1) ? 1 : amountFilled;
-		canvasContext.fillStyle = '#fff';
-		canvasContext.fillRect(outerOffset + innerOffset,
-				       this.height_ - outerOffset - innerOffset - barHeight,
-				       barLength * amountFilled,
-				       barHeight);
-	    }
+	// Draw the inner bar
+	var amountFilled = this.currentHeat / this.maxHeat;
+	amountFilled = (amountFilled > 1) ? 1 : amountFilled;
+	if (this.isOverheated) {
+	    canvasContext.fillStyle = '#c00';
+	} else {
+	    canvasContext.fillStyle = '#fff';
 	}
+	canvasContext.fillRect(outerOffset + innerOffset,
+			       this.height_ - outerOffset - innerOffset - barHeight,
+			       barLength * amountFilled,
+			       barHeight);
     }
 }
