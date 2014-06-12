@@ -11,7 +11,7 @@ function Asteroid(position, velocity, radius, health) {
     this.updatePosition = function() {
 	this.x += this.v.getX();
 	this.y += this.v.getY();
-    }
+    };
 }
 
 function Blast(position, direction, isCharged) {
@@ -37,7 +37,7 @@ function Blast(position, direction, isCharged) {
     this.updatePosition = function() {
 	this.x += this.v.getX();
 	this.y += this.v.getY();
-    }
+    };
 }
 
 function Player(position, radius, shieldRadius, shieldHealth, direction) {

@@ -43,11 +43,11 @@ function Map() {
 	this.player_ = new Player(new Position(playerX, playerY), playerRadius, shieldRadius, shieldHealth, 3 * Math.PI / 2);
 
 	// Test asteroids
-	this.asteroids_.push(new Asteroid(new Position(10,10), new PolarVector(2, Math.PI / 4), 12, 2));
-	this.asteroids_.push(new Asteroid(new Position(30,30), new PolarVector(2, Math.PI / 3), 12, 2));
-	this.asteroids_.push(new Asteroid(new Position(50,50), new PolarVector(2, Math.PI / 2), 12, 2));
-	this.asteroids_.push(new Asteroid(new Position(70,70), new PolarVector(2, Math.PI / 1), 12, 2));
-	this.asteroids_.push(new Asteroid(new Position(90,90), new PolarVector(2, Math.PI * 3 / 4), 12, 2));
+	this.asteroids_.push(new Asteroid(new Position(10, 10), new PolarVector(2, Math.PI / 4), 12, 4));
+	this.asteroids_.push(new Asteroid(new Position(30, 30), new PolarVector(2, Math.PI / 3), 12, 4));
+	this.asteroids_.push(new Asteroid(new Position(50, 50), new PolarVector(2, Math.PI / 2), 12, 4));
+	this.asteroids_.push(new Asteroid(new Position(70, 70), new PolarVector(2, Math.PI / 1), 12, 4));
+	this.asteroids_.push(new Asteroid(new Position(90, 90), new PolarVector(2, Math.PI * 3 / 4), 12, 4));
 
 	this.startChargeTime = 0;
 	this.isCharging = false;
@@ -64,7 +64,7 @@ function Map() {
 	this.gameOver = false;
 	
 	this.isLoaded = true;
-    }
+    };
 
     this.aimBlaster = function(location) {
 	this.updateBlasterDirection(location);
@@ -72,13 +72,13 @@ function Map() {
 	    this.isCharging = true;
 	    this.startChargeTime = (new Date).getTime();
 	}
-    }
+    };
 
     this.updateBlasterDirection = function(location) {
 	var dx = location.x - this.player_.x;
 	var dy = location.y - this.player_.y;
 	this.player_.direction = determineAngle(dx, dy);
-    }
+    };
 
     this.createBlast = function(location) {
 	this.updateBlasterDirection(location);
@@ -97,7 +97,7 @@ function Map() {
 	this.isCharged = false;
 	this.isCharging = false;
 	this.startChargeTime = 0;
-    }
+    };
 
     this.update = function() {
 	
@@ -128,7 +128,7 @@ function Map() {
 	    this.currentHeat = 0;
 	}
 
-	for (var i in this.asteroids_) {
+	for (var i = 0; i < this.asteroids_.length; i++) {
 	    var a = this.asteroids_[i];
 
 	    // Check for collisions with shield
@@ -174,11 +174,11 @@ function Map() {
 	    }
 	    
 	    a.updatePosition();
-	}
+	};
 
-	for (var i in this.blasts_) {
+	for (var i = this.blasts_.length - 1; i >= 0; i--) {
 	    var b = this.blasts_[i];
-	    for (var j in this.asteroids_) {
+	    for (var j = this.asteroids_.length - 1; j >= 0; j--) {
 		var a = this.asteroids_[j];
 		if (distanceBetween(b.x, b.y, a.x, a.y) < b.radius + a.radius) {
 		    var resultant = addMomentums(a.mass, a.v, b.mass, b.v);
@@ -202,7 +202,7 @@ function Map() {
 	}
 
 	this.previousTime = this.currentTime;
-    }
+    };
 
     this.draw = function(canvasContext) {
 	// Draw background
@@ -234,7 +234,7 @@ function Map() {
 	}
 
 	// Draw asteroids
-	for (var i in this.asteroids_) {
+	for (var i = 0; i < this.asteroids_.length; i++) {
 	    var a = this.asteroids_[i];
 	    canvasContext.beginPath();
 	    canvasContext.arc(a.x, a.y, a.radius, 0, 2 * Math.PI, true);
@@ -243,7 +243,7 @@ function Map() {
 	}
 
 	// Draw blasts
-	for (var i in this.blasts_) {
+	for (var i = 0; i < this.blasts_.length; i++) {
 	    var b = this.blasts_[i];
 	    canvasContext.beginPath();
 	    canvasContext.arc(b.x, b.y, b.radius, 0, 2 * Math.PI, true);
@@ -262,7 +262,7 @@ function Map() {
 
 	// Draw heat meter
 	this.drawHeatMeter(canvasContext);
-    }
+    };
 
     this.drawChargeMeter = function(canvasContext) {
 	var innerOffset = 4;
@@ -294,13 +294,13 @@ function Map() {
 	    canvasContext.arc(this.player_.x, this.player_.y, this.player_.shieldRadius - innerOffset, (this.player_.direction - sideAngle) % (2 * Math.PI), (this.player_.direction + sideAngle) % (2 * Math.PI));
 	    canvasContext.fill();
 	}
-    }
+    };
 
     this.drawScore = function(canvasContext) {
 	canvasContext.font = 'normal 16px montserrat';
 	canvasContext.fillStyle = '#fff';
 	canvasContext.fillText("SCORE " + this.score, 8, 24)
-    }
+    };
 
     this.drawShieldHealth = function(canvasContext) {
 	var outerOffset = 8;
@@ -313,7 +313,7 @@ function Map() {
 	    canvasContext.fillStyle = '#fff';
 	    canvasContext.fillRect(x, outerOffset, barWidth, barHeight);
 	}
-    }
+    };
 
     this.drawHeatMeter = function(canvasContext) {
 	var outerOffset = 8;
@@ -344,5 +344,5 @@ function Map() {
 			       this.height_ - outerOffset - innerOffset - barHeight,
 			       barLength * amountFilled,
 			       barHeight);
-    }
+    };
 }

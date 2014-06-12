@@ -6,9 +6,15 @@
 function InputManager() {
     this.events = {};
 
-    this.eventTouchstart = 'touchstart';
-    this.eventTouchmove = 'touchmove';
-    this.eventTouchend = 'touchend';
+    if (window.navigator.msPointerEnabled) {
+	this.eventTouchstart = 'MSPointerDown';
+	this.eventTouchmove = 'MSPointerMove';
+	this.eventTouchend = 'MSPointerUp';
+    } else {
+	this.eventTouchstart = 'touchstart';
+	this.eventTouchmove = 'touchmove';
+	this.eventTouchend = 'touchend';
+    }
 
     this.listen();
 }
@@ -34,39 +40,56 @@ InputManager.prototype.listen = function() {
 
     // Respond to swipe events
     var touchStartClientX, touchStartClientY;
-    var gameContainer = document.getElementsByClassName("game-container")[0];
+    var gameCanvas = document.getElementById("game-canvas");
 
-    gameContainer.addEventListener(this.eventTouchstart, function(event) {
-	if (event.targetTouches > 1) {
+    gameCanvas.addEventListener(this.eventTouchstart, function(event) {
+	if ((!window.navigator.msPointerEnabled && event.touches.length > 1) || event.targetTouches > 1) {
 	    return; // Ignore if touching with more than 1 finger
 	}
-	
-	touchStartClientX = event.touches[0].clientX;
-	touchStartClientY = event.touches[0].clientY;
+
+	if (window.navigator.msPointerEnabled) {
+	    touchStartClientX = event.pageX;
+	    touchStartClientY = event.pageY;
+	} else {	
+	    touchStartClientX = event.touches[0].clientX;
+	    touchStartClientY = event.touches[0].clientY;
+	}
 
 	self.emit('touchStart', new Position(touchStartClientX, touchStartClientY));
 	
 	event.preventDefault();
     });
 
-    gameContainer.addEventListener(this.eventTouchmove, function(event) {
-	touchClientX = event.touches[0].clientX;
-	touchClientY = event.touches[0].clientY;
+    gameCanvas.addEventListener(this.eventTouchmove, function(event) {
+	var touchClientX, touchClientY;
+
+	if (window.navigator.msPointerEnabled) {
+	    touchClientX = event.pageX;
+	    touchClientY = event.pageY;
+	} else {
+	    touchClientX = event.touches[0].clientX;
+	    touchClientY = event.touches[0].clientY;
+	}
 
 	self.emit('touchMove', new Position(touchClientX, touchClientY));
 
 	event.preventDefault();
     });
 
-    gameContainer.addEventListener(this.eventTouchend, function(event) {
-	if (event.targetTouches > 0) {
+    gameCanvas.addEventListener(this.eventTouchend, function(event) {
+	if ((!window.navigator.msPointerEnabled && event.touches.length > 0) || event.targetTouches > 0) {
 	    return; // Ignore if still touching with one or more fingers
 	}
 
 	var touchEndClientX, touchEndClientY;
-	
-	touchEndClientX = event.changedTouches[0].clientX;
-	touchEndClientY = event.changedTouches[0].clientY;
+
+	if (window.navigator.msPointerEnabled) {
+	    touchEndClientX = event.pageX;
+	    touchEndClientY = event.pageY;
+	} else {
+	    touchEndClientX = event.changedTouches[0].clientX;
+	    touchEndClientY = event.changedTouches[0].clientY;
+	}
 
 	self.emit('touchEnd', new Position(touchEndClientX, touchEndClientY));
     });

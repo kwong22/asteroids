@@ -34,7 +34,7 @@ function Game() {
 	}
 
 	return false;
-    }
+    };
 
     this.loadContent = function() {
 	
@@ -43,38 +43,38 @@ function Game() {
 	map_.loadMap();
 
 	this.gameLoop = setInterval(this.runGameLoop, this.DRAW_INTERVAL);
-    }
+    };
 
     this.run = function() {
 	if (this.initialize()) {
 	    // If initialization was successful, load content
 	    this.loadContent();
 	}
-    }
+    };
 
     this.runGameLoop = function() {
 	document.game.update();
 	document.game.draw();
-    }
+    };
 
     this.update = function() {
 
 	// Handle user input
 
 	map_.update();
-    }
+    };
     
     this.handleTouchStart = function(location) {
 	map_.aimBlaster(this.getCanvasCoordinates(location));
-    }
+    };
 
     this.handleTouchMove = function(location) {
 	map_.updateBlasterDirection(this.getCanvasCoordinates(location));
-    }
+    };
 
     this.handleTouchEnd = function(location) {
 	map_.createBlast(this.getCanvasCoordinates(location));
-    }
+    };
 
     this.getCanvasCoordinates = function(clientLocation) {
 	var rect = canvas_.getBoundingClientRect();
@@ -82,7 +82,7 @@ function Game() {
 	var y = clientLocation.y - rect.top;
 
 	return new Position(x, y);
-    }
+    };
 
     this.draw = function() {
 	
@@ -95,5 +95,5 @@ function Game() {
 
 	// Draw buffer on screen
 	canvasContext_.drawImage(canvasBuffer_, 0, 0);
-    }
+    };
 }

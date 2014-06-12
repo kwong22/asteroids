@@ -8,10 +8,10 @@ function PolarVector(r, theta) {
     this.theta = theta;
     this.getX = function() {
 	return r * Math.cos(theta);
-    }
+    };
     this.getY = function() {
 	return r * Math.sin(theta);
-    }
+    };
 }
 
 function distanceBetween(x1, y1, x2, y2) {
