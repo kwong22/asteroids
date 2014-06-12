@@ -5,7 +5,7 @@ function Asteroid(position, velocity, radius, health) {
     this.radius = radius;
     this.health = health;
 
-    this.density = 4;
+    this.density = 10;
     this.mass = this.density * Math.pow(this.radius, 3);
 
     this.updatePosition = function() {
@@ -31,7 +31,7 @@ function Blast(position, direction, isCharged) {
 	this.v = new PolarVector(4, this.direction);
     }
 
-    this.density = 5;
+    this.density = 4;
     this.mass = this.density * Math.pow(this.radius, 3);
 
     this.updatePosition = function() {

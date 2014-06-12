@@ -45,9 +45,9 @@ function Map() {
 	// Test asteroids
 	this.asteroids_.push(new Asteroid(new Position(10, 10), new PolarVector(2, Math.PI / 4), 12, 4));
 	this.asteroids_.push(new Asteroid(new Position(30, 30), new PolarVector(2, Math.PI / 3), 12, 4));
-	this.asteroids_.push(new Asteroid(new Position(50, 50), new PolarVector(2, Math.PI / 2), 12, 4));
-	this.asteroids_.push(new Asteroid(new Position(70, 70), new PolarVector(2, Math.PI / 1), 12, 4));
-	this.asteroids_.push(new Asteroid(new Position(90, 90), new PolarVector(2, Math.PI * 3 / 4), 12, 4));
+	//this.asteroids_.push(new Asteroid(new Position(50, 50), new PolarVector(2, Math.PI / 2), 12, 4));
+	//this.asteroids_.push(new Asteroid(new Position(70, 70), new PolarVector(2, Math.PI / 1), 12, 4));
+	//this.asteroids_.push(new Asteroid(new Position(90, 90), new PolarVector(2, Math.PI * 3 / 4), 12, 4));
 
 	this.startChargeTime = 0;
 	this.isCharging = false;
@@ -178,18 +178,24 @@ function Map() {
 
 	for (var i = this.blasts_.length - 1; i >= 0; i--) {
 	    var b = this.blasts_[i];
+
 	    for (var j = this.asteroids_.length - 1; j >= 0; j--) {
 		var a = this.asteroids_[j];
 		if (distanceBetween(b.x, b.y, a.x, a.y) < b.radius + a.radius) {
 		    var resultant = addMomentums(a.mass, a.v, b.mass, b.v);
 		    var nv = new PolarVector(resultant.r / a.mass, resultant.theta);
-		    a.v = nv;
-		    this.blasts_.splice(i, 1);
-		    a.health--;
-		    if (a.health < 1) {
-			this.asteroids_.splice(j, 1);
+		    if (a.health > 1) {
+			var nradius = Math.pow(0.5, 1 / 3) * a.radius;
+			var splitAngle = Math.PI / 4;
+			var a1 = new Asteroid(new Position(a.x, a.y), new PolarVector(nv.r / Math.sqrt(2), nv.theta - splitAngle), nradius, a.health / 2);
+			var a2 = new Asteroid(new Position(a.x, a.y), new PolarVector(nv.r / Math.sqrt(2), nv.theta + splitAngle), nradius, a.health / 2);
+			this.asteroids_.push(a1, a2);
+		    } else {
 			if (!this.gameOver) this.score++;
 		    }
+
+		    this.asteroids_.splice(j, 1);
+		    this.blasts_.splice(i, 1);
 		}
 	    }
 	    if ((b.y + b.radius < 0) ||
