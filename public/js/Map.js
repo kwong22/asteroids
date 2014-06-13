@@ -17,12 +17,14 @@ function Map() {
     this.maxHeat = 100;
     this.cooldownRate = 0.5;
     this.isOverheated = false;
-    this.overheatDuration = 2000;
+    this.overheatDuration = 0;
     this.startOverheatTime = 0;
 
     this.startTime = 0;
     this.currentTime = 0;
     this.previousTime = 0;
+
+    this.currentStage = 0;
 
     this.gameOver = false;
 
@@ -42,13 +44,6 @@ function Map() {
 	var shieldHealth = 8;
 	this.player_ = new Player(new Position(playerX, playerY), playerRadius, shieldRadius, shieldHealth, 3 * Math.PI / 2);
 
-	// Test asteroids
-	this.asteroids_.push(new Asteroid(new Position(10, 10), new PolarVector(2, Math.PI / 4), 12, 2));
-	this.asteroids_.push(new Asteroid(new Position(30, 30), new PolarVector(2, Math.PI / 3), 12, 2));
-	//this.asteroids_.push(new Asteroid(new Position(50, 50), new PolarVector(2, Math.PI / 2), 12, 4));
-	//this.asteroids_.push(new Asteroid(new Position(70, 70), new PolarVector(2, Math.PI / 1), 12, 4));
-	//this.asteroids_.push(new Asteroid(new Position(90, 90), new PolarVector(2, Math.PI * 3 / 4), 12, 4));
-
 	this.startChargeTime = 0;
 	this.isCharging = false;
 	this.isCharged = false;
@@ -61,9 +56,74 @@ function Map() {
 	this.currentTime = (new Date).getTime();
 	this.previousTime = (new Date).getTime();
 	
+	this.currentStage = 0;
+	this.startStage();
+
 	this.gameOver = false;
 	
 	this.isLoaded = true;
+    };
+
+    this.startStage = function() {
+	if (this.asteroids_.length > 0) this.clearAsteroids();
+	if (this.blasts_.length > 0) this.clearBlasts();
+
+	var totalHealth = this.currentStage + 1;
+	var remainingHealth = totalHealth;
+	var numLevels = 2; // The number of different asteroid levels
+	var basicSize = 8;
+	var sizeRange = 2;
+	var basicSpeed = 1;
+	var speedRange = 0.25;
+
+	while (remainingHealth > 0) {
+	    var maxLevel = (remainingHealth > Math.pow(2, numLevels - 1)) ? numLevels : Math.floor(Math.log(remainingHealth) / Math.log(2));
+	    var rand = Math.floor(getRandomArbitrary(0, maxLevel));
+
+	    var aHealth = Math.pow(2, rand);
+
+	    var dSize = getRandomArbitrary(-1 * sizeRange * (rand + 1) / 2, sizeRange * (rand + 1) / 2);
+	    var aSize = Math.sqrt((rand + 1)) * basicSize + dSize;
+
+	    var dSpeed = getRandomArbitrary(-1 * speedRange / 2, speedRange / 2);
+	    var aSpeed = basicSpeed + dSpeed;
+
+	    this.spawnAsteroid(aSize, aHealth, aSpeed);
+	    remainingHealth -= aHealth;
+	}
+    };
+
+    this.spawnAsteroid = function(radius, health, speed) {
+	var minx = -1 * radius;
+	var maxx = this.width_ + radius;
+	var miny = -1 * radius;
+	var maxy = this.height_ + radius;
+	var x = getRandomArbitrary(minx, maxx);
+	var y = getRandomArbitrary(miny, maxy);
+
+	if (x / this.width_ > y / this.height_) {
+	    // Left or right
+	    x = (x < this.width_ / 2) ? minx : maxx;
+	} else {
+	    // Top or bottom
+	    y = (y < this.height_ / 2) ? miny : maxy;
+	}
+
+	var angle = getRandomArbitrary(0, 2 * Math.PI);
+
+	this.asteroids_.push(new Asteroid(new Position(x, y), new PolarVector(speed, angle), radius, health));
+    };
+
+    this.clearAsteroids = function() {
+	for (var i = this.asteroids_.length - 1; i >= 0; i--) {
+	    this.asteroids_.splice(i, 1);
+	}
+    };
+
+    this.clearBlasts = function() {
+	for (var i = this.blasts_.length - 1; i >= 0; i--) {
+	    this.blasts_.splice(i, 1);
+	}
     };
 
     this.aimBlaster = function(location) {
@@ -211,6 +271,11 @@ function Map() {
 		this.blasts_.splice(i, 1);
 	    }
 	    b.updatePosition(fps, dt);
+	}
+
+	if (this.asteroids_.length < 1) {
+	    this.currentStage++;
+	    this.startStage();
 	}
 
 	this.previousTime = this.currentTime;
