@@ -8,9 +8,10 @@ function Asteroid(position, velocity, radius, health) {
     this.density = 10;
     this.mass = this.density * Math.pow(this.radius, 3);
 
-    this.updatePosition = function() {
-	this.x += this.v.getX();
-	this.y += this.v.getY();
+    this.updatePosition = function(fps, dt) {
+	var step = 1000 / fps;
+	this.x += this.v.getX() * dt / step;
+	this.y += this.v.getY() * dt / step;
     };
 }
 
@@ -34,9 +35,10 @@ function Blast(position, direction, isCharged) {
     this.density = 4;
     this.mass = this.density * Math.pow(this.radius, 3);
 
-    this.updatePosition = function() {
-	this.x += this.v.getX();
-	this.y += this.v.getY();
+    this.updatePosition = function(fps, dt) {
+	var step = 1000 / fps;
+	this.x += this.v.getX() * dt / step;
+	this.y += this.v.getY() * dt / step;
     };
 }
 

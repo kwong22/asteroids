@@ -43,8 +43,8 @@ function Map() {
 	this.player_ = new Player(new Position(playerX, playerY), playerRadius, shieldRadius, shieldHealth, 3 * Math.PI / 2);
 
 	// Test asteroids
-	this.asteroids_.push(new Asteroid(new Position(10, 10), new PolarVector(2, Math.PI / 4), 12, 4));
-	this.asteroids_.push(new Asteroid(new Position(30, 30), new PolarVector(2, Math.PI / 3), 12, 4));
+	this.asteroids_.push(new Asteroid(new Position(10, 10), new PolarVector(2, Math.PI / 4), 12, 2));
+	this.asteroids_.push(new Asteroid(new Position(30, 30), new PolarVector(2, Math.PI / 3), 12, 2));
 	//this.asteroids_.push(new Asteroid(new Position(50, 50), new PolarVector(2, Math.PI / 2), 12, 4));
 	//this.asteroids_.push(new Asteroid(new Position(70, 70), new PolarVector(2, Math.PI / 1), 12, 4));
 	//this.asteroids_.push(new Asteroid(new Position(90, 90), new PolarVector(2, Math.PI * 3 / 4), 12, 4));
@@ -103,6 +103,12 @@ function Map() {
 	
 	this.currentTime = (new Date).getTime();
 
+	// For time-based intervals, does not depend on frame rate
+	var fps = 60; // The frame rate that the game is based on
+	var step = 1000 / fps;
+	var dt = this.currentTime - this.previousTime;
+	var tfactor = dt / step;
+
 	if (this.isCharging) {
 	    if (this.startChargeTime != 0) {
 		if (this.currentTime - this.startChargeTime >= this.chargeThresholdTime) {
@@ -114,16 +120,16 @@ function Map() {
 
 	if (this.isOverheated) {
 	    if (!(this.currentTime - this.startOverheatTime < this.overheatDuration)) {
-		if (this.currentHeat >= this.cooldownRate) {
-		    this.currentHeat -= this.cooldownRate;
+		if (this.currentHeat >= this.cooldownRate * tfactor) {
+		    this.currentHeat -= this.cooldownRate * tfactor;
 		} else {
 		    this.currentHeat = 0;
 		    this.isOverheated = false;
 		    this.startOverheatTime = 0;
 		}
 	    }
-	} else if (this.currentHeat >= this.cooldownRate) {
-	    this.currentHeat -= this.cooldownRate;
+	} else if (this.currentHeat >= this.cooldownRate * tfactor) {
+	    this.currentHeat -= this.cooldownRate * tfactor;
 	} else {
 	    this.currentHeat = 0;
 	}
@@ -173,7 +179,7 @@ function Map() {
 		a.x = -1 * a.radius;
 	    }
 	    
-	    a.updatePosition();
+	    a.updatePosition(fps, dt);
 	};
 
 	for (var i = this.blasts_.length - 1; i >= 0; i--) {
@@ -204,7 +210,7 @@ function Map() {
 		(b.x - b.radius > this.width_)) {
 		this.blasts_.splice(i, 1);
 	    }
-	    b.updatePosition();
+	    b.updatePosition(fps, dt);
 	}
 
 	this.previousTime = this.currentTime;
