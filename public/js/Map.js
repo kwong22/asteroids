@@ -23,6 +23,8 @@ function Map() {
     this.startTime = 0;
     this.currentTime = 0;
     this.previousTime = 0;
+    this.TIME_LIMIT = 180000; // in milliseconds
+    this.timeElapsed = 0;
 
     this.currentStage = 0;
 
@@ -55,6 +57,7 @@ function Map() {
 	this.startTime = (new Date).getTime();
 	this.currentTime = (new Date).getTime();
 	this.previousTime = (new Date).getTime();
+	this.timeElapsed = 0;
 	
 	this.currentStage = 0;
 	this.startStage();
@@ -100,16 +103,29 @@ function Map() {
 	var maxy = this.height_ + radius;
 	var x = getRandomArbitrary(minx, maxx);
 	var y = getRandomArbitrary(miny, maxy);
+	var angle = 0;
+	var angleBuffer = Math.PI / 12; // To force asteroid toward playing area
 
-	if (x / this.width_ > y / this.height_) {
+	var coin = Math.floor(getRandomArbitrary(0, 2));
+	if (coin > 0) {
 	    // Left or right
-	    x = (x < this.width_ / 2) ? minx : maxx;
+	    if (x < this.width_ / 2) {
+		x = minx;
+		angle = getRandomArbitrary(-1 * Math.PI / 2 + angleBuffer, Math.PI / 2 - angleBuffer);
+	    } else {
+		x = maxx;
+		angle = getRandomArbitrary(Math.PI / 2 + angleBuffer, Math.PI * 3 / 2 - angleBuffer);
+	    }
 	} else {
 	    // Top or bottom
-	    y = (y < this.height_ / 2) ? miny : maxy;
+	    if (y < this.height_ / 2) {
+		y = miny;
+		angle = getRandomArbitrary(angleBuffer, Math.PI - angleBuffer);
+	    } else {
+		y = maxy;
+		angle = getRandomArbitrary(Math.PI + angleBuffer, 2 * Math.PI - angleBuffer);
+	    }
 	}
-
-	var angle = getRandomArbitrary(0, 2 * Math.PI);
 
 	this.asteroids_.push(new Asteroid(new Position(x, y), new PolarVector(speed, angle), radius, health));
     };
@@ -160,40 +176,60 @@ function Map() {
     };
 
     this.update = function() {
-	
-	this.currentTime = (new Date).getTime();
 
-	// For time-based intervals, does not depend on frame rate
-	var fps = 60; // The frame rate that the game is based on
-	var step = 1000 / fps;
-	var dt = this.currentTime - this.previousTime;
-	var tfactor = dt / step;
+	if (!this.gameOver) {
+	    this.currentTime = (new Date).getTime();
 
-	if (this.isCharging) {
-	    if (this.startChargeTime != 0) {
-		if (this.currentTime - this.startChargeTime >= this.chargeThresholdTime) {
-		    this.isCharged = true;
-		    this.startChargeTime = 0;
+	    // Check if time limit has been reached
+	    this.timeElapsed = this.currentTime - this.startTime;
+	    if (this.timeElapsed >= this.TIME_LIMIT) this.gameOver = true;
+
+	    // For time-based intervals, does not depend on frame rate
+	    var fps = 60; // The frame rate that the game is based on
+	    var step = 1000 / fps;
+	    var dt = this.currentTime - this.previousTime;
+	    var tfactor = dt / step;
+
+	    if (this.isCharging) {
+		if (this.startChargeTime != 0) {
+		    if (this.currentTime - this.startChargeTime >= this.chargeThresholdTime) {
+			this.isCharged = true;
+			this.startChargeTime = 0;
+		    }
 		}
 	    }
-	}
 
-	if (this.isOverheated) {
-	    if (!(this.currentTime - this.startOverheatTime < this.overheatDuration)) {
-		if (this.currentHeat >= this.cooldownRate * tfactor) {
-		    this.currentHeat -= this.cooldownRate * tfactor;
-		} else {
-		    this.currentHeat = 0;
-		    this.isOverheated = false;
-		    this.startOverheatTime = 0;
+	    if (this.isOverheated) {
+		if (!(this.currentTime - this.startOverheatTime < this.overheatDuration)) {
+		    if (this.currentHeat >= this.cooldownRate * tfactor) {
+			this.currentHeat -= this.cooldownRate * tfactor;
+		    } else {
+			this.currentHeat = 0;
+			this.isOverheated = false;
+			this.startOverheatTime = 0;
+		    }
 		}
+	    } else if (this.currentHeat >= this.cooldownRate * tfactor) {
+		this.currentHeat -= this.cooldownRate * tfactor;
+	    } else {
+		this.currentHeat = 0;
 	    }
-	} else if (this.currentHeat >= this.cooldownRate * tfactor) {
-	    this.currentHeat -= this.cooldownRate * tfactor;
-	} else {
-	    this.currentHeat = 0;
-	}
 
+	    this.updateAsteroids(fps, dt);
+
+	    this.updateBlasts(fps, dt);
+
+	    // Check if stage has been completed
+	    if (this.asteroids_.length < 1) {
+		this.currentStage++;
+		this.startStage();
+	    }
+
+	    this.previousTime = this.currentTime;
+	}
+    };
+
+    this.updateAsteroids = function(fps, dt) {
 	for (var i = 0; i < this.asteroids_.length; i++) {
 	    var a = this.asteroids_[i];
 
@@ -222,7 +258,6 @@ function Map() {
 		}
 	    } else if (!this.gameOver) {
 		if (distanceBetween(this.player_.x, this.player_.y, a.x, a.y) < this.player_.radius + a.radius) {
-		    console.log("You lose. Your final score is " + this.score);
 		    this.gameOver = true;
 		}
 	    }
@@ -240,8 +275,10 @@ function Map() {
 	    }
 	    
 	    a.updatePosition(fps, dt);
-	};
+	}
+    };
 
+    this.updateBlasts = function(fps, dt) {
 	for (var i = this.blasts_.length - 1; i >= 0; i--) {
 	    var b = this.blasts_[i];
 
@@ -272,73 +309,74 @@ function Map() {
 	    }
 	    b.updatePosition(fps, dt);
 	}
-
-	if (this.asteroids_.length < 1) {
-	    this.currentStage++;
-	    this.startStage();
-	}
-
-	this.previousTime = this.currentTime;
     };
+
 
     this.draw = function(canvasContext) {
 	// Draw background
 	canvasContext.fillStyle = '#333';
 	canvasContext.fillRect(0, 0, this.width_, this.height_);
 
-	// Draw charge meter
-	this.drawChargeMeter(canvasContext);
+	if (!this.gameOver) {
+	    // Draw charge meter
+	    this.drawChargeMeter(canvasContext);
 
-	// Draw player
-	var v1 = new PolarVector(this.player_.radius * 4 / 3, this.player_.direction);
-	var v2 = new PolarVector(this.player_.radius, this.player_.direction + 2 * Math.PI / 3);
-	var v3 = new PolarVector(this.player_.radius, this.player_.direction + 4 * Math.PI / 3);
-	canvasContext.fillStyle = '#369';
-	canvasContext.beginPath();
-	canvasContext.moveTo(this.player_.x + v1.getX(), this.player_.y + v1.getY());
-	canvasContext.lineTo(this.player_.x + v2.getX(), this.player_.y + v2.getY());
-	canvasContext.lineTo(this.player_.x, this.player_.y);
-	canvasContext.lineTo(this.player_.x + v3.getX(), this.player_.y + v3.getY());
-	canvasContext.closePath();
-	canvasContext.fill();
-
-	// Draw shield
-	if (this.player_.isShielded) {
+	    // Draw player
+	    var v1 = new PolarVector(this.player_.radius * 4 / 3, this.player_.direction);
+	    var v2 = new PolarVector(this.player_.radius, this.player_.direction + 2 * Math.PI / 3);
+	    var v3 = new PolarVector(this.player_.radius, this.player_.direction + 4 * Math.PI / 3);
+	    canvasContext.fillStyle = '#369';
 	    canvasContext.beginPath();
-	    canvasContext.arc(this.player_.x, this.player_.y, this.player_.shieldRadius, 0, 2 * Math.PI, true);
-	    canvasContext.strokeStyle = '#9cf';
-	    canvasContext.stroke();
-	}
-
-	// Draw asteroids
-	for (var i = 0; i < this.asteroids_.length; i++) {
-	    var a = this.asteroids_[i];
-	    canvasContext.beginPath();
-	    canvasContext.arc(a.x, a.y, a.radius, 0, 2 * Math.PI, true);
-	    canvasContext.fillStyle = '#777';
+	    canvasContext.moveTo(this.player_.x + v1.getX(), this.player_.y + v1.getY());
+	    canvasContext.lineTo(this.player_.x + v2.getX(), this.player_.y + v2.getY());
+	    canvasContext.lineTo(this.player_.x, this.player_.y);
+	    canvasContext.lineTo(this.player_.x + v3.getX(), this.player_.y + v3.getY());
+	    canvasContext.closePath();
 	    canvasContext.fill();
+
+	    // Draw shield
+	    if (this.player_.isShielded) {
+		canvasContext.beginPath();
+		canvasContext.arc(this.player_.x, this.player_.y, this.player_.shieldRadius, 0, 2 * Math.PI, true);
+		canvasContext.strokeStyle = '#9cf';
+		canvasContext.stroke();
+	    }
+
+	    // Draw asteroids
+	    for (var i = 0; i < this.asteroids_.length; i++) {
+		var a = this.asteroids_[i];
+		canvasContext.beginPath();
+		canvasContext.arc(a.x, a.y, a.radius, 0, 2 * Math.PI, true);
+		canvasContext.fillStyle = '#777';
+		canvasContext.fill();
+	    }
+
+	    // Draw blasts
+	    for (var i = 0; i < this.blasts_.length; i++) {
+		var b = this.blasts_[i];
+		canvasContext.beginPath();
+		canvasContext.arc(b.x, b.y, b.radius, 0, 2 * Math.PI, true);
+		var color = (b.isCharged) ? '#f30' : '#f90';
+		canvasContext.fillStyle = color;
+		canvasContext.fill();
+	    }
+
+	    // Draw score
+	    this.drawScore(canvasContext);
+
+	    // Draw time left
+	    this.drawTimeLeft(canvasContext);
+
+	    // Draw shield health
+	    if (this.player_.isShielded) {
+		this.drawShieldHealth(canvasContext);
+	    }
+
+	    // Draw heat meter
+	    this.drawHeatMeter(canvasContext);
+	} else {
+	    this.drawGameOver(canvasContext);
 	}
-
-	// Draw blasts
-	for (var i = 0; i < this.blasts_.length; i++) {
-	    var b = this.blasts_[i];
-	    canvasContext.beginPath();
-	    canvasContext.arc(b.x, b.y, b.radius, 0, 2 * Math.PI, true);
-	    var color = (b.isCharged) ? '#f30' : '#f90';
-	    canvasContext.fillStyle = color;
-	    canvasContext.fill();
-	}
-
-	// Draw score
-	this.drawScore(canvasContext);
-
-	// Draw shield health
-	if (this.player_.isShielded) {
-	    this.drawShieldHealth(canvasContext);
-	}
-
-	// Draw heat meter
-	this.drawHeatMeter(canvasContext);
     };
 
     this.drawChargeMeter = function(canvasContext) {
@@ -376,7 +414,21 @@ function Map() {
     this.drawScore = function(canvasContext) {
 	canvasContext.font = 'normal 16px montserrat';
 	canvasContext.fillStyle = '#fff';
-	canvasContext.fillText("SCORE " + this.score, 8, 24)
+	canvasContext.fillText('SCORE ' + this.score, 8, 24);
+    };
+
+    this.drawTimeLeft = function(canvasContext) {
+	var timeLeft = this.TIME_LIMIT - this.timeElapsed;
+	var timeText;
+	if (timeLeft > 0) {
+	    var tempTime = Math.floor(timeLeft / 100);
+	    timeText = ((tempTime % 10) === 0) ? tempTime / 10 + '.0 s' : tempTime / 10 + ' s'; // ex. to write time as "1.2 s"
+	} else {
+	    timeText = 'NO TIME REMAINING';
+	}
+	canvasContext.font = 'normal 16px montserrat';
+	canvasContext.fillStyle = '#fff';
+	canvasContext.fillText(timeText, 8, 48);
     };
 
     this.drawShieldHealth = function(canvasContext) {
@@ -421,5 +473,15 @@ function Map() {
 			       this.height_ - outerOffset - innerOffset - barHeight,
 			       barLength * amountFilled,
 			       barHeight);
+    };
+
+    this.drawGameOver = function(canvasContext) {
+	var x = this.width_ / 4;
+	var y = this.height_ / 4;
+	canvasContext.font = 'normal 24px montserrat';
+	canvasContext.fillStyle = '#fff';
+	canvasContext.fillText('GAME OVER', x, y);
+	canvasContext.font = 'normal 16px montserrat';
+	canvasContext.fillText('Your final score is ' + this.score, x, y + 24);
     };
 }
