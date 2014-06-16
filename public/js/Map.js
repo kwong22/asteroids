@@ -166,8 +166,17 @@ function Map() {
     this.createBlast = function(location) {
 	this.updateBlasterDirection(location);
 
+	var chargeFrac = 0;
 	if (!this.isOverheated) {
-	    this.blasts_.push(new Blast(new Position(this.player_.x, this.player_.y), this.player_.direction, this.isCharged));
+	    if (this.isCharging) {
+		if (this.isCharged) {
+		    chargeFrac = 1;
+		} else {
+		    chargeFrac = (this.currentTime - this.startChargeTime) / this.chargeThresholdTime;
+		}
+	    }
+
+	    this.blasts_.push(new Blast(new Position(this.player_.x, this.player_.y), this.player_.direction, chargeFrac));
 
 	    this.currentHeat += this.blastHeat;
 	    if (this.currentHeat > this.maxHeat) {
@@ -358,6 +367,7 @@ function Map() {
 	    if (this.player_.isShielded) {
 		canvasContext.beginPath();
 		canvasContext.arc(this.player_.x, this.player_.y, this.player_.shieldRadius, 0, 2 * Math.PI, true);
+		canvasContext.lineWidth = 2;
 		canvasContext.strokeStyle = '#9cf';
 		canvasContext.stroke();
 	    }
@@ -374,11 +384,25 @@ function Map() {
 	    // Draw blasts
 	    for (var i = 0; i < this.blasts_.length; i++) {
 		var b = this.blasts_[i];
+
+		// Draw head
 		canvasContext.beginPath();
 		canvasContext.arc(b.x, b.y, b.radius, 0, 2 * Math.PI, true);
-		var color = (b.isCharged) ? '#f30' : '#f90';
+		//var color = (b.isCharged) ? '#f30' : '#f90';
+		var color = '#f90';
 		canvasContext.fillStyle = color;
 		canvasContext.fill();
+		
+		// Draw tail
+		var maxTailLength = 16;
+		var tailLength = Math.min(distanceBetween(this.player_.x, this.player_.y, b.x, b.y), maxTailLength);
+		var tailVec = new PolarVector(tailLength, (b.v.theta + Math.PI) % (2 * Math.PI));
+		canvasContext.beginPath();
+		canvasContext.moveTo(b.x, b.y);
+		canvasContext.lineTo(b.x + tailVec.getX(), b.y + tailVec.getY());
+		canvasContext.lineWidth = 4;
+		canvasContext.strokeStyle = color;
+		canvasContext.stroke();
 	    }
 
 	    // Draw score
@@ -410,7 +434,7 @@ function Map() {
 		amountFilled = 1;
 	    } else {
 		amountFilled = (this.currentTime - this.startChargeTime) / this.chargeThresholdTime;
-		amountFilled = (amountFilled > 1) ? 1 : amountFilled;
+		amountFilled = Math.min(1, amountFilled);
 	    }
 	    var sideAngle = maxAngle / 2 * amountFilled;
 

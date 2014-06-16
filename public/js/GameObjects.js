@@ -15,15 +15,17 @@ function Asteroid(position, velocity, radius, health) {
     };
 }
 
-function Blast(position, direction, isCharged) {
+function Blast(position, direction, chargeFrac) {
     this.x = position.x;
     this.y = position.y;
     this.direction = direction;
-    this.isCharged = isCharged;
+    //this.isCharged = isCharged;
+    this.chargeFrac = chargeFrac;
 
-    this.radius = 0;
-    this.v = 0;
-    
+    this.radius = 2;
+    this.v = new PolarVector(2 + 6 * chargeFrac, this.direction);
+
+    /*
     if (isCharged) {
 	this.radius = 8;
 	this.v = new PolarVector(8, this.direction);
@@ -31,7 +33,7 @@ function Blast(position, direction, isCharged) {
 	this.radius = 4;
 	this.v = new PolarVector(4, this.direction);
     }
-
+    */
     this.density = 4;
     this.mass = this.density * Math.pow(this.radius, 3);
 
