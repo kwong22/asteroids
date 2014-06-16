@@ -13,17 +13,21 @@ function Map() {
     this.isCharged = false;
 
     this.currentHeat = 0;
-    this.blastHeat = 20;
+    this.blastHeat = 25;
     this.maxHeat = 100;
     this.cooldownRate = 0.5;
     this.isOverheated = false;
     this.overheatDuration = 0;
     this.startOverheatTime = 0;
 
+    this.startHitTime = 0;
+    this.hitDuration = 500;
+    this.wasHit = false;
+
     this.startTime = 0;
     this.currentTime = 0;
     this.previousTime = 0;
-    this.TIME_LIMIT = 180000; // in milliseconds
+    this.TIME_LIMIT = 90000; // in milliseconds
     this.timeElapsed = 0;
 
     this.currentStage = 0;
@@ -43,7 +47,7 @@ function Map() {
 	var playerY = this.height_ / 2;
 	var playerRadius = 12;
 	var shieldRadius = 32;
-	var shieldHealth = 8;
+	var shieldHealth = 4;
 	this.player_ = new Player(new Position(playerX, playerY), playerRadius, shieldRadius, shieldHealth, 3 * Math.PI / 2);
 
 	this.startChargeTime = 0;
@@ -53,6 +57,9 @@ function Map() {
 	this.currentHeat = 0;
 	this.isOverheated = false;
 	this.startOverheatTime = 0;
+
+	this.startHitTime = 0;
+	this.wasHit = false;
 
 	this.startTime = (new Date).getTime();
 	this.currentTime = (new Date).getTime();
@@ -89,7 +96,7 @@ function Map() {
 	    var aSize = Math.sqrt((rand + 1)) * basicSize + dSize;
 
 	    var dSpeed = getRandomArbitrary(-1 * speedRange / 2, speedRange / 2);
-	    var aSpeed = basicSpeed + dSpeed;
+	    var aSpeed = (basicSpeed + dSpeed) * 1.2 / (rand + 1);
 
 	    this.spawnAsteroid(aSize, aHealth, aSpeed);
 	    remainingHealth -= aHealth;
@@ -215,6 +222,13 @@ function Map() {
 		this.currentHeat = 0;
 	    }
 
+	    if (this.wasHit) {
+		if (this.currentTime - this.startHitTime >= this.hitDuration) {
+		    this.startHitTime = 0;
+		    this.wasHit = false;
+		}
+	    }
+
 	    this.updateAsteroids(fps, dt);
 
 	    this.updateBlasts(fps, dt);
@@ -254,6 +268,8 @@ function Map() {
 		    a.y = this.player_.y + temp.getY();
 
 		    this.player_.shieldHealth--;
+		    this.startHitTime = (new Date).getTime();
+		    this.wasHit = true;
 		    if (this.player_.shieldHealth < 1) this.player_.isShielded = false;
 		}
 	    } else if (!this.gameOver) {
@@ -325,7 +341,11 @@ function Map() {
 	    var v1 = new PolarVector(this.player_.radius * 4 / 3, this.player_.direction);
 	    var v2 = new PolarVector(this.player_.radius, this.player_.direction + 2 * Math.PI / 3);
 	    var v3 = new PolarVector(this.player_.radius, this.player_.direction + 4 * Math.PI / 3);
-	    canvasContext.fillStyle = '#369';
+	    if (this.wasHit) {
+		canvasContext.fillStyle = '#c00';
+	    } else {
+		canvasContext.fillStyle = '#369';
+	    }
 	    canvasContext.beginPath();
 	    canvasContext.moveTo(this.player_.x + v1.getX(), this.player_.y + v1.getY());
 	    canvasContext.lineTo(this.player_.x + v2.getX(), this.player_.y + v2.getY());
