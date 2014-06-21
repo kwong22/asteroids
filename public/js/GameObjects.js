@@ -19,21 +19,11 @@ function Blast(position, direction, chargeFrac) {
     this.x = position.x;
     this.y = position.y;
     this.direction = direction;
-    //this.isCharged = isCharged;
     this.chargeFrac = chargeFrac;
 
     this.radius = 2;
     this.v = new PolarVector(2 + 6 * chargeFrac, this.direction);
 
-    /*
-    if (isCharged) {
-	this.radius = 8;
-	this.v = new PolarVector(8, this.direction);
-    } else {
-	this.radius = 4;
-	this.v = new PolarVector(4, this.direction);
-    }
-    */
     this.density = 4;
     this.mass = this.density * Math.pow(this.radius, 3);
 
@@ -45,6 +35,7 @@ function Blast(position, direction, chargeFrac) {
 }
 
 function Player(position, radius, shieldRadius, shieldHealth, direction) {
+    this.imgName = 'ship';
     this.x = position.x;
     this.y = position.y;
     this.radius = radius;

@@ -4,6 +4,7 @@ function Game() {
     this.DRAW_INTERVAL = 1000 / this.FPS;
     var inputManager_ = new InputManager;
     var map_;
+    var imageRepository_;
     var canvas_;
     var canvasContext_;
     var canvasBuffer_;
@@ -17,7 +18,8 @@ function Game() {
 	inputManager_.on('touchMove', document.game.handleTouchMove.bind(this));
 	inputManager_.on('touchEnd', document.game.handleTouchEnd.bind(this));
 
-	map_ = new Map();
+	imageRepository_ = new ImageRepository();
+	map_ = new Map(imageRepository_);
 
 	canvas_ = document.getElementById('game-canvas');
 
@@ -37,9 +39,9 @@ function Game() {
     };
 
     this.loadContent = function() {
-	
-	// Load images
 
+	// Load images
+	imageRepository_.loadContent();
 	map_.loadMap();
 
 	this.gameLoop = setInterval(this.runGameLoop, this.DRAW_INTERVAL);
@@ -53,8 +55,10 @@ function Game() {
     };
 
     this.runGameLoop = function() {
-	document.game.update();
-	document.game.draw();
+	if (map_.isLoaded && imageRepository_.loaded()) {
+	    document.game.update();
+	    document.game.draw();
+	}
     };
 
     this.update = function() {

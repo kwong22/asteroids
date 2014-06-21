@@ -1,4 +1,4 @@
-function Map() {
+function Map(imgRepository) {
     this.map_ = null;
     this.score = 0;
     this.asteroids_ = [];
@@ -34,6 +34,7 @@ function Map() {
 
     this.gameOver = false;
 
+    this.ImageRepository = imgRepository;
     this.isLoaded = false;
 
     this.loadMap = function() {
@@ -45,7 +46,7 @@ function Map() {
 	// Load in the map
 	var playerX = this.width_ / 2;
 	var playerY = this.height_ / 2;
-	var playerRadius = 12;
+	var playerRadius = 15;
 	var shieldRadius = 32;
 	var shieldHealth = 4;
 	this.player_ = new Player(new Position(playerX, playerY), playerRadius, shieldRadius, shieldHealth, 3 * Math.PI / 2);
@@ -339,70 +340,51 @@ function Map() {
 
     this.draw = function(canvasContext) {
 	// Draw background
-	canvasContext.fillStyle = '#333';
-	canvasContext.fillRect(0, 0, this.width_, this.height_);
+	var sprite = this.ImageRepository.sprites['bg'];
+	canvasContext.drawImage(sprite.img, 0, 0, sprite.w, sprite.h);
 
 	if (!this.gameOver) {
 	    // Draw charge meter
 	    this.drawChargeMeter(canvasContext);
 
-	    // Draw player
-	    var v1 = new PolarVector(this.player_.radius * 4 / 3, this.player_.direction);
-	    var v2 = new PolarVector(this.player_.radius, this.player_.direction + 2 * Math.PI / 3);
-	    var v3 = new PolarVector(this.player_.radius, this.player_.direction + 4 * Math.PI / 3);
-	    if (this.wasHit) {
-		canvasContext.fillStyle = '#c00';
-	    } else {
-		canvasContext.fillStyle = '#369';
+	    // Draw blasts
+	    for (var i = 0; i < this.blasts_.length; i++) {
+		var b = this.blasts_[i];
+		canvasContext.save(); // Save the current coordinate system
+		canvasContext.translate(b.x, b.y);
+		canvasContext.rotate(b.v.theta + Math.PI / 2);
+		sprite = this.ImageRepository.sprites['blast'];
+		canvasContext.drawImage(sprite.img, sprite.cx, 0, sprite.w, sprite.h);
+		canvasContext.restore(); // Restore the original coordinate system
 	    }
-	    canvasContext.beginPath();
-	    canvasContext.moveTo(this.player_.x + v1.getX(), this.player_.y + v1.getY());
-	    canvasContext.lineTo(this.player_.x + v2.getX(), this.player_.y + v2.getY());
-	    canvasContext.lineTo(this.player_.x, this.player_.y);
-	    canvasContext.lineTo(this.player_.x + v3.getX(), this.player_.y + v3.getY());
-	    canvasContext.closePath();
-	    canvasContext.fill();
+
+	    // Draw the player
+	    canvasContext.save();
+	    canvasContext.translate(this.player_.x, this.player_.y);
+	    canvasContext.rotate(this.player_.direction + Math.PI / 2);
+	    sprite = this.ImageRepository.sprites[this.player_.imgName];
+	    canvasContext.drawImage(sprite.img, sprite.cx, sprite.cy, sprite.w, sprite.h);
+	    canvasContext.restore();
 
 	    // Draw shield
 	    if (this.player_.isShielded) {
 		canvasContext.beginPath();
 		canvasContext.arc(this.player_.x, this.player_.y, this.player_.shieldRadius, 0, 2 * Math.PI, true);
+		canvasContext.fillStyle = '#900';
+		canvasContext.globalAlpha = 0.25;
+		canvasContext.fill();
+		canvasContext.globalAlpha = 1;
 		canvasContext.lineWidth = 2;
-		canvasContext.strokeStyle = '#9cf';
+		canvasContext.strokeStyle = '#f00';
 		canvasContext.stroke();
 	    }
 
 	    // Draw asteroids
 	    for (var i = 0; i < this.asteroids_.length; i++) {
 		var a = this.asteroids_[i];
-		canvasContext.beginPath();
-		canvasContext.arc(a.x, a.y, a.radius, 0, 2 * Math.PI, true);
-		canvasContext.fillStyle = '#777';
-		canvasContext.fill();
-	    }
-
-	    // Draw blasts
-	    for (var i = 0; i < this.blasts_.length; i++) {
-		var b = this.blasts_[i];
-
-		// Draw head
-		canvasContext.beginPath();
-		canvasContext.arc(b.x, b.y, b.radius, 0, 2 * Math.PI, true);
-		//var color = (b.isCharged) ? '#f30' : '#f90';
-		var color = '#f90';
-		canvasContext.fillStyle = color;
-		canvasContext.fill();
-		
-		// Draw tail
-		var maxTailLength = 16;
-		var tailLength = Math.min(distanceBetween(this.player_.x, this.player_.y, b.x, b.y), maxTailLength);
-		var tailVec = new PolarVector(tailLength, (b.v.theta + Math.PI) % (2 * Math.PI));
-		canvasContext.beginPath();
-		canvasContext.moveTo(b.x, b.y);
-		canvasContext.lineTo(b.x + tailVec.getX(), b.y + tailVec.getY());
-		canvasContext.lineWidth = 4;
-		canvasContext.strokeStyle = color;
-		canvasContext.stroke();
+		sprite = this.ImageRepository.sprites['asteroid'];
+		var width = 2 * a.radius;
+		canvasContext.drawImage(sprite.img, a.x - a.radius, a.y - a.radius, width, width);
 	    }
 
 	    // Draw score
