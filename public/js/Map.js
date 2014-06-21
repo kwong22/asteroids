@@ -46,7 +46,7 @@ function Map(imgRepository) {
 	// Load in the map
 	var playerX = this.width_ / 2;
 	var playerY = this.height_ / 2;
-	var playerRadius = 15;
+	var playerRadius = 18;
 	var shieldRadius = 32;
 	var shieldHealth = 4;
 	this.player_ = new Player(new Position(playerX, playerY), playerRadius, shieldRadius, shieldHealth, 3 * Math.PI / 2);
@@ -354,7 +354,7 @@ function Map(imgRepository) {
 		canvasContext.translate(b.x, b.y);
 		canvasContext.rotate(b.v.theta + Math.PI / 2);
 		sprite = this.ImageRepository.sprites['blast'];
-		canvasContext.drawImage(sprite.img, sprite.cx, 0, sprite.w, sprite.h);
+		canvasContext.drawImage(sprite.img, sprite.cx, -1 * b.radius, sprite.w, sprite.h);
 		canvasContext.restore(); // Restore the original coordinate system
 	    }
 

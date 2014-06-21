@@ -2,8 +2,8 @@ function ImageRepository() {
     var parsed = {
 	'ship': {
 	    'src': 'img/ship_28x28-01.png',
-	    'w': 28,
-	    'h': 28
+	    'w': 36,
+	    'h': 36
 	},
 	'bg': {
 	    'src': 'img/background_300x400-01.png',
