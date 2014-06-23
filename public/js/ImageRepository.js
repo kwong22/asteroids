@@ -1,7 +1,7 @@
 function ImageRepository() {
     var parsed = {
 	'ship': {
-	    'src': 'img/ship_28x28-01.png',
+	    'src': 'img/ship_36x36-01.png',
 	    'w': 36,
 	    'h': 36
 	},
@@ -16,7 +16,7 @@ function ImageRepository() {
 	    'h': 16
 	},
 	'asteroid': {
-	    'src': 'img/asteroid_12x12-01.png',
+	    'src': 'img/asteroid_24x24-01.png',
 	    'w': 12,
 	    'h': 12
 	}
