@@ -1,85 +1,82 @@
 function Map(imgRepository) {
-    this.map_ = null;
-    this.score = 0;
-    this.asteroids_ = [];
-    this.blasts_ = [];
-    this.width_ = 300;
-    this.height_ = 400;
-    this.player_ = null;
+    var score = 0;
+    var asteroids = [];
+    var blasts = [];
+    var width = 300;
+    var height = 400;
+    var player = null;
 
-    this.chargeThresholdTime = 1000;
-    this.startChargeTime = 0;
-    this.isCharging = false;
-    this.isCharged = false;
+    var chargeThresholdTime = 1000;
+    var startChargeTime = 0;
+    var isCharging = false;
+    var isCharged = false;
 
-    this.currentHeat = 0;
-    this.blastHeat = 25;
-    this.maxHeat = 100;
-    this.cooldownRate = 0.5;
-    this.isOverheated = false;
-    this.overheatDuration = 0;
-    this.startOverheatTime = 0;
+    var currentHeat = 0;
+    var blastHeat = 25;
+    var maxHeat = 100;
+    var cooldownRate = 0.5;
+    var isOverheated = false;
+    var overheatDuration = 0;
+    var startOverheatTime = 0;
 
-    this.startHitTime = 0;
-    this.hitDuration = 500;
-    this.wasHit = false;
+    var startHitTime = 0;
+    var hitDuration = 500;
+    var wasHit = false;
 
-    this.startTime = 0;
-    this.currentTime = 0;
-    this.previousTime = 0;
-    this.TIME_LIMIT = 90000; // in milliseconds
-    this.timeElapsed = 0;
+    var startTime = 0;
+    var currentTime = 0;
+    var previousTime = 0;
+    var TIME_LIMIT = 90000; // in milliseconds
+    var timeElapsed = 0;
 
-    this.currentStage = 0;
+    var currentStage = 0;
 
-    this.gameOver = false;
+    var gameOver = false;
 
-    this.ImageRepository = imgRepository;
+    var ImageRepository = imgRepository;
     this.isLoaded = false;
 
     this.loadMap = function() {
 
-	this.map_ = null;
-
-	this.score = 0;
+	score = 0;
 
 	// Load in the map
-	var playerX = this.width_ / 2;
-	var playerY = this.height_ / 2;
+	var playerX = width / 2;
+	var playerY = height / 2;
 	var playerRadius = 18;
 	var shieldRadius = 32;
 	var shieldHealth = 4;
-	this.player_ = new Player(new Position(playerX, playerY), playerRadius, shieldRadius, shieldHealth, 3 * Math.PI / 2);
+	player = new Player(new Position(playerX, playerY), playerRadius, shieldRadius, shieldHealth, 3 * Math.PI / 2);
 
-	this.startChargeTime = 0;
-	this.isCharging = false;
-	this.isCharged = false;
+	startChargeTime = 0;
+	isCharging = false;
+	isCharged = false;
 
-	this.currentHeat = 0;
-	this.isOverheated = false;
-	this.startOverheatTime = 0;
+	currentHeat = 0;
+	isOverheated = false;
+	startOverheatTime = 0;
 
-	this.startHitTime = 0;
-	this.wasHit = false;
+	startHitTime = 0;
+	wasHit = false;
 
-	this.startTime = (new Date).getTime();
-	this.currentTime = (new Date).getTime();
-	this.previousTime = (new Date).getTime();
-	this.timeElapsed = 0;
+	startTime = (new Date).getTime();
+	currentTime = (new Date).getTime();
+	previousTime = (new Date).getTime();
+	timeElapsed = 0;
 	
-	this.currentStage = 0;
+	currentStage = 0;
 	this.startStage();
 
-	this.gameOver = false;
+	gameOver = false;
 	
 	this.isLoaded = true;
     };
 
     this.startStage = function() {
-	if (this.asteroids_.length > 0) this.clearAsteroids();
-	if (this.blasts_.length > 0) this.clearBlasts();
+	if (asteroids.length > 0) this.clearAsteroids();
+	if (blasts.length > 0) this.clearBlasts();
 
-	var totalHealth = this.currentStage + 1;
+	var totalHealth = currentStage + 1;
 	var remainingHealth = totalHealth;
 	var numLevels = 2; // The number of different asteroid levels
 	var basicSize = 8;
@@ -106,9 +103,9 @@ function Map(imgRepository) {
 
     this.spawnAsteroid = function(radius, health, speed) {
 	var minx = -1 * radius;
-	var maxx = this.width_ + radius;
+	var maxx = width + radius;
 	var miny = -1 * radius;
-	var maxy = this.height_ + radius;
+	var maxy = height + radius;
 	var x = getRandomArbitrary(minx, maxx);
 	var y = getRandomArbitrary(miny, maxy);
 	var angle = 0;
@@ -117,7 +114,7 @@ function Map(imgRepository) {
 	var coin = Math.floor(getRandomArbitrary(0, 2));
 	if (coin > 0) {
 	    // Left or right
-	    if (x < this.width_ / 2) {
+	    if (x < width / 2) {
 		x = minx;
 		angle = getRandomArbitrary(-1 * Math.PI / 2 + angleBuffer, Math.PI / 2 - angleBuffer);
 	    } else {
@@ -126,7 +123,7 @@ function Map(imgRepository) {
 	    }
 	} else {
 	    // Top or bottom
-	    if (y < this.height_ / 2) {
+	    if (y < height / 2) {
 		y = miny;
 		angle = getRandomArbitrary(angleBuffer, Math.PI - angleBuffer);
 	    } else {
@@ -135,107 +132,107 @@ function Map(imgRepository) {
 	    }
 	}
 
-	this.asteroids_.push(new Asteroid(new Position(x, y), new PolarVector(speed, angle), radius, health));
+	asteroids.push(new Asteroid(new Position(x, y), new PolarVector(speed, angle), radius, health));
     };
 
     this.clearAsteroids = function() {
-	for (var i = this.asteroids_.length - 1; i >= 0; i--) {
-	    this.asteroids_.splice(i, 1);
+	for (var i = asteroids.length - 1; i >= 0; i--) {
+	    asteroids.splice(i, 1);
 	}
     };
 
     this.clearBlasts = function() {
-	for (var i = this.blasts_.length - 1; i >= 0; i--) {
-	    this.blasts_.splice(i, 1);
+	for (var i = blasts.length - 1; i >= 0; i--) {
+	    blasts.splice(i, 1);
 	}
     };
 
     this.aimBlaster = function(location) {
 	this.updateBlasterDirection(location);
-	if (!this.isCharging && !this.isOverheated) {
-	    this.isCharging = true;
-	    this.startChargeTime = (new Date).getTime();
+	if (!isCharging && !isOverheated) {
+	    isCharging = true;
+	    startChargeTime = (new Date).getTime();
 	}
     };
 
     this.updateBlasterDirection = function(location) {
-	var dx = location.x - this.player_.x;
-	var dy = location.y - this.player_.y;
-	this.player_.direction = determineAngle(dx, dy);
+	var dx = location.x - player.x;
+	var dy = location.y - player.y;
+	player.direction = determineAngle(dx, dy);
     };
 
     this.createBlast = function(location) {
 	this.updateBlasterDirection(location);
 
 	var chargeFrac = 0;
-	if (!this.isOverheated) {
-	    if (this.isCharging) {
-		if (this.isCharged) {
+	if (!isOverheated) {
+	    if (isCharging) {
+		if (isCharged) {
 		    chargeFrac = 1;
 		} else {
-		    chargeFrac = (this.currentTime - this.startChargeTime) / this.chargeThresholdTime;
+		    chargeFrac = (currentTime - startChargeTime) / chargeThresholdTime;
 		}
 	    }
 
-	    this.blasts_.push(new Blast(new Position(this.player_.x, this.player_.y), this.player_.direction, chargeFrac));
+	    blasts.push(new Blast(new Position(player.x, player.y), player.direction, chargeFrac));
 
-	    this.currentHeat += this.blastHeat;
-	    if (this.currentHeat > this.maxHeat) {
-		this.currentHeat = this.maxHeat;
-		this.isOverheated = true;
-		this.startOverheatTime = (new Date).getTime();
+	    currentHeat += blastHeat;
+	    if (currentHeat > maxHeat) {
+		currentHeat = maxHeat;
+		isOverheated = true;
+		startOverheatTime = (new Date).getTime();
 	    }
 	}
 
-	this.isCharged = false;
-	this.isCharging = false;
-	this.startChargeTime = 0;
+	isCharged = false;
+	isCharging = false;
+	startChargeTime = 0;
     };
 
     this.update = function() {
 
-	if (!this.gameOver) {
-	    this.currentTime = (new Date).getTime();
+	if (!gameOver) {
+	    currentTime = (new Date).getTime();
 
 	    // Check if time limit has been reached
-	    this.timeElapsed = this.currentTime - this.startTime;
-	    if (this.timeElapsed >= this.TIME_LIMIT) this.gameOver = true;
+	    timeElapsed = currentTime - startTime;
+	    if (timeElapsed >= TIME_LIMIT) gameOver = true;
 
 	    // For time-based intervals, does not depend on frame rate
 	    var fps = 60; // The frame rate that the game is based on
 	    var step = 1000 / fps;
-	    var dt = this.currentTime - this.previousTime;
+	    var dt = currentTime - previousTime;
 	    var tfactor = dt / step;
 
-	    if (this.isCharging) {
-		if (this.startChargeTime != 0) {
-		    if (this.currentTime - this.startChargeTime >= this.chargeThresholdTime) {
-			this.isCharged = true;
-			this.startChargeTime = 0;
+	    if (isCharging) {
+		if (startChargeTime != 0) {
+		    if (currentTime - startChargeTime >= chargeThresholdTime) {
+			isCharged = true;
+			startChargeTime = 0;
 		    }
 		}
 	    }
 
-	    if (this.isOverheated) {
-		if (!(this.currentTime - this.startOverheatTime < this.overheatDuration)) {
-		    if (this.currentHeat >= this.cooldownRate * tfactor) {
-			this.currentHeat -= this.cooldownRate * tfactor;
+	    if (isOverheated) {
+		if (!(currentTime - startOverheatTime < overheatDuration)) {
+		    if (currentHeat >= cooldownRate * tfactor) {
+			currentHeat -= cooldownRate * tfactor;
 		    } else {
-			this.currentHeat = 0;
-			this.isOverheated = false;
-			this.startOverheatTime = 0;
+			currentHeat = 0;
+			isOverheated = false;
+			startOverheatTime = 0;
 		    }
 		}
-	    } else if (this.currentHeat >= this.cooldownRate * tfactor) {
-		this.currentHeat -= this.cooldownRate * tfactor;
+	    } else if (currentHeat >= cooldownRate * tfactor) {
+		currentHeat -= cooldownRate * tfactor;
 	    } else {
-		this.currentHeat = 0;
+		currentHeat = 0;
 	    }
 
-	    if (this.wasHit) {
-		if (this.currentTime - this.startHitTime >= this.hitDuration) {
-		    this.startHitTime = 0;
-		    this.wasHit = false;
+	    if (wasHit) {
+		if (currentTime - startHitTime >= hitDuration) {
+		    startHitTime = 0;
+		    wasHit = false;
 		}
 	    }
 
@@ -244,24 +241,24 @@ function Map(imgRepository) {
 	    this.updateBlasts(fps, dt);
 
 	    // Check if stage has been completed
-	    if (this.asteroids_.length < 1) {
-		this.currentStage++;
+	    if (asteroids.length < 1) {
+		currentStage++;
 		this.startStage();
 	    }
 
-	    this.previousTime = this.currentTime;
+	    previousTime = currentTime;
 	}
     };
 
     this.updateAsteroids = function(fps, dt) {
-	for (var i = 0; i < this.asteroids_.length; i++) {
-	    var a = this.asteroids_[i];
+	for (var i = 0; i < asteroids.length; i++) {
+	    var a = asteroids[i];
 
 	    // Check for collisions with shield
-	    if (this.player_.isShielded) {
-		if (distanceBetween(this.player_.x, this.player_.y, a.x, a.y) < this.player_.shieldRadius + a.radius) {
-		    var dx = a.x - this.player_.x;
-		    var dy = a.y - this.player_.y;
+	    if (player.isShielded) {
+		if (distanceBetween(player.x, player.y, a.x, a.y) < player.shieldRadius + a.radius) {
+		    var dx = a.x - player.x;
+		    var dy = a.y - player.y;
 		    var r = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 		    var theta = determineAngle(dx, dy);
 		    var n = new PolarVector(r, theta);
@@ -273,30 +270,30 @@ function Map(imgRepository) {
 		    a.v = newv;
 
 		    // Prevent asteroid from sticking inside shield
-		    var temp = new PolarVector(this.player_.shieldRadius + a.radius, theta);
-		    a.x = this.player_.x + temp.getX();
-		    a.y = this.player_.y + temp.getY();
+		    var temp = new PolarVector(player.shieldRadius + a.radius, theta);
+		    a.x = player.x + temp.getX();
+		    a.y = player.y + temp.getY();
 
-		    this.player_.shieldHealth--;
-		    this.startHitTime = (new Date).getTime();
-		    this.wasHit = true;
-		    if (this.player_.shieldHealth < 1) this.player_.isShielded = false;
+		    player.shieldHealth--;
+		    startHitTime = (new Date).getTime();
+		    wasHit = true;
+		    if (player.shieldHealth < 1) player.isShielded = false;
 		}
-	    } else if (!this.gameOver) {
-		if (distanceBetween(this.player_.x, this.player_.y, a.x, a.y) < this.player_.radius + a.radius) {
-		    this.gameOver = true;
+	    } else if (!gameOver) {
+		if (distanceBetween(player.x, player.y, a.x, a.y) < player.radius + a.radius) {
+		    gameOver = true;
 		}
 	    }
 
 	    // Wraparound world
 	    if (a.y + a.radius < 0) {
-		a.y = this.height_ + a.radius;
-	    } else if (a.y - a.radius > this.height_) {
+		a.y = height + a.radius;
+	    } else if (a.y - a.radius > height) {
 		a.y = -1 * a.radius;
 	    }
 	    if (a.x + a.radius < 0) {
-		a.x = this.width_ + a.radius;
-	    } else if (a.x - a.radius > this.width_) {
+		a.x = width + a.radius;
+	    } else if (a.x - a.radius > width) {
 		a.x = -1 * a.radius;
 	    }
 	    
@@ -305,11 +302,11 @@ function Map(imgRepository) {
     };
 
     this.updateBlasts = function(fps, dt) {
-	for (var i = this.blasts_.length - 1; i >= 0; i--) {
-	    var b = this.blasts_[i];
+	for (var i = blasts.length - 1; i >= 0; i--) {
+	    var b = blasts[i];
 
-	    for (var j = this.asteroids_.length - 1; j >= 0; j--) {
-		var a = this.asteroids_[j];
+	    for (var j = asteroids.length - 1; j >= 0; j--) {
+		var a = asteroids[j];
 		if (distanceBetween(b.x, b.y, a.x, a.y) < b.radius + a.radius) {
 		    var resultant = addMomentums(a.mass, a.v, b.mass, b.v);
 		    var nv = new PolarVector(resultant.r / a.mass, resultant.theta);
@@ -318,20 +315,20 @@ function Map(imgRepository) {
 			var splitAngle = Math.PI / 4;
 			var a1 = new Asteroid(new Position(a.x, a.y), new PolarVector(nv.r / Math.sqrt(2), nv.theta - splitAngle), nradius, a.health / 2);
 			var a2 = new Asteroid(new Position(a.x, a.y), new PolarVector(nv.r / Math.sqrt(2), nv.theta + splitAngle), nradius, a.health / 2);
-			this.asteroids_.push(a1, a2);
+			asteroids.push(a1, a2);
 		    } else {
-			if (!this.gameOver) this.score++;
+			if (!gameOver) score++;
 		    }
 
-		    this.asteroids_.splice(j, 1);
-		    this.blasts_.splice(i, 1);
+		    asteroids.splice(j, 1);
+		    blasts.splice(i, 1);
 		}
 	    }
 	    if ((b.y + b.radius < 0) ||
-		(b.y - b.radius > this.height_) ||
+		(b.y - b.radius > height) ||
 		(b.x + b.radius < 0) ||
-		(b.x - b.radius > this.width_)) {
-		this.blasts_.splice(i, 1);
+		(b.x - b.radius > width)) {
+		blasts.splice(i, 1);
 	    }
 	    b.updatePosition(fps, dt);
 	}
@@ -340,36 +337,36 @@ function Map(imgRepository) {
 
     this.draw = function(canvasContext) {
 	// Draw background
-	var sprite = this.ImageRepository.sprites['bg'];
+	var sprite = ImageRepository.sprites['bg'];
 	canvasContext.drawImage(sprite.img, 0, 0, sprite.w, sprite.h);
 
-	if (!this.gameOver) {
+	if (!gameOver) {
 	    // Draw charge meter
 	    this.drawChargeMeter(canvasContext);
 
 	    // Draw blasts
-	    for (var i = 0; i < this.blasts_.length; i++) {
-		var b = this.blasts_[i];
+	    for (var i = 0; i < blasts.length; i++) {
+		var b = blasts[i];
 		canvasContext.save(); // Save the current coordinate system
 		canvasContext.translate(b.x, b.y);
 		canvasContext.rotate(b.v.theta + Math.PI / 2);
-		sprite = this.ImageRepository.sprites['blast'];
+		sprite = ImageRepository.sprites['blast'];
 		canvasContext.drawImage(sprite.img, sprite.cx, -1 * b.radius, sprite.w, sprite.h);
 		canvasContext.restore(); // Restore the original coordinate system
 	    }
 
 	    // Draw the player
 	    canvasContext.save();
-	    canvasContext.translate(this.player_.x, this.player_.y);
-	    canvasContext.rotate(this.player_.direction + Math.PI / 2);
-	    sprite = this.ImageRepository.sprites[this.player_.imgName];
+	    canvasContext.translate(player.x, player.y);
+	    canvasContext.rotate(player.direction + Math.PI / 2);
+	    sprite = ImageRepository.sprites[player.imgName];
 	    canvasContext.drawImage(sprite.img, sprite.cx, sprite.cy, sprite.w, sprite.h);
 	    canvasContext.restore();
 
 	    // Draw shield
-	    if (this.player_.isShielded) {
+	    if (player.isShielded) {
 		canvasContext.beginPath();
-		canvasContext.arc(this.player_.x, this.player_.y, this.player_.shieldRadius, 0, 2 * Math.PI, true);
+		canvasContext.arc(player.x, player.y, player.shieldRadius, 0, 2 * Math.PI, true);
 		canvasContext.fillStyle = '#900';
 		canvasContext.globalAlpha = 0.25;
 		canvasContext.fill();
@@ -380,9 +377,9 @@ function Map(imgRepository) {
 	    }
 
 	    // Draw asteroids
-	    for (var i = 0; i < this.asteroids_.length; i++) {
-		var a = this.asteroids_[i];
-		sprite = this.ImageRepository.sprites['asteroid'];
+	    for (var i = 0; i < asteroids.length; i++) {
+		var a = asteroids[i];
+		sprite = ImageRepository.sprites['asteroid'];
 		var width = 2 * a.radius;
 		canvasContext.drawImage(sprite.img, a.x - a.radius, a.y - a.radius, width, width);
 	    }
@@ -394,7 +391,7 @@ function Map(imgRepository) {
 	    this.drawTimeLeft(canvasContext);
 
 	    // Draw shield health
-	    if (this.player_.isShielded) {
+	    if (player.isShielded) {
 		this.drawShieldHealth(canvasContext);
 	    }
 
@@ -411,28 +408,28 @@ function Map(imgRepository) {
 	var amountFilled = 0;
 
 	// Draw if charging or charged
-	if (this.isCharging) {
-	    if (this.isCharged) {
+	if (isCharging) {
+	    if (isCharged) {
 		amountFilled = 1;
 	    } else {
-		amountFilled = (this.currentTime - this.startChargeTime) / this.chargeThresholdTime;
+		amountFilled = (currentTime - startChargeTime) / chargeThresholdTime;
 		amountFilled = Math.min(1, amountFilled);
 	    }
 	    var sideAngle = maxAngle / 2 * amountFilled;
 
-	    var v1 = new PolarVector(this.player_.shieldRadius - innerOffset, (this.player_.direction - sideAngle) % (2 * Math.PI));
-	    var v2 = new PolarVector(this.player_.shieldRadius - innerOffset, (this.player_.direction + sideAngle) % (2 * Math.PI));
+	    var v1 = new PolarVector(player.shieldRadius - innerOffset, (player.direction - sideAngle) % (2 * Math.PI));
+	    var v2 = new PolarVector(player.shieldRadius - innerOffset, (player.direction + sideAngle) % (2 * Math.PI));
 
 	    canvasContext.beginPath();
-	    canvasContext.moveTo(this.player_.x, this.player_.y);
-	    canvasContext.lineTo(this.player_.x + v1.getX(), this.player_.y + v1.getY());
-	    canvasContext.lineTo(this.player_.x + v2.getX(), this.player_.y + v2.getY());
+	    canvasContext.moveTo(player.x, player.y);
+	    canvasContext.lineTo(player.x + v1.getX(), player.y + v1.getY());
+	    canvasContext.lineTo(player.x + v2.getX(), player.y + v2.getY());
 	    canvasContext.closePath();
 	    canvasContext.fillStyle = '#fff';
 	    canvasContext.fill();
 
 	    canvasContext.beginPath();
-	    canvasContext.arc(this.player_.x, this.player_.y, this.player_.shieldRadius - innerOffset, (this.player_.direction - sideAngle) % (2 * Math.PI), (this.player_.direction + sideAngle) % (2 * Math.PI));
+	    canvasContext.arc(player.x, player.y, player.shieldRadius - innerOffset, (player.direction - sideAngle) % (2 * Math.PI), (player.direction + sideAngle) % (2 * Math.PI));
 	    canvasContext.fill();
 	}
     };
@@ -440,11 +437,11 @@ function Map(imgRepository) {
     this.drawScore = function(canvasContext) {
 	canvasContext.font = 'normal 16px montserrat';
 	canvasContext.fillStyle = '#fff';
-	canvasContext.fillText('SCORE ' + this.score, 8, 24);
+	canvasContext.fillText('SCORE ' + score, 8, 24);
     };
 
     this.drawTimeLeft = function(canvasContext) {
-	var timeLeft = this.TIME_LIMIT - this.timeElapsed;
+	var timeLeft = TIME_LIMIT - timeElapsed;
 	var timeText;
 	if (timeLeft > 0) {
 	    var tempTime = Math.floor(timeLeft / 100);
@@ -463,8 +460,8 @@ function Map(imgRepository) {
 	var barHeight = 20;
 	var barWidth = 8;
 
-	for (var i = 0; i < this.player_.shieldHealth; i++) {
-	    var x = this.width_ - (outerOffset + barWidth + i * (innerOffset + barWidth));
+	for (var i = 0; i < player.shieldHealth; i++) {
+	    var x = width - (outerOffset + barWidth + i * (innerOffset + barWidth));
 	    canvasContext.fillStyle = '#fff';
 	    canvasContext.fillRect(x, outerOffset, barWidth, barHeight);
 	}
@@ -475,7 +472,7 @@ function Map(imgRepository) {
 	var innerOffset = 4;
 	var borderWidth = 2;
 	var barHeight = 16;
-	var barLength = this.width_ - 2 * outerOffset - 2 * innerOffset;
+	var barLength = width - 2 * outerOffset - 2 * innerOffset;
 	var outerWidth = borderWidth + 2 * innerOffset + barLength;
 	var outerHeight = borderWidth + 2 * innerOffset + barHeight;
 
@@ -483,31 +480,31 @@ function Map(imgRepository) {
 	canvasContext.lineWidth = borderWidth;
 	canvasContext.strokeStyle = '#fff';
 	canvasContext.strokeRect(outerOffset - 0.5 * borderWidth,
-				 this.height_ - outerOffset - outerHeight + 0.5 * borderWidth,
+				 height - outerOffset - outerHeight + 0.5 * borderWidth,
 				 outerWidth,
 				 outerHeight);
 
 	// Draw the inner bar
-	var amountFilled = this.currentHeat / this.maxHeat;
+	var amountFilled = currentHeat / maxHeat;
 	amountFilled = (amountFilled > 1) ? 1 : amountFilled;
-	if (this.isOverheated) {
+	if (isOverheated) {
 	    canvasContext.fillStyle = '#c00';
 	} else {
 	    canvasContext.fillStyle = '#fff';
 	}
 	canvasContext.fillRect(outerOffset + innerOffset,
-			       this.height_ - outerOffset - innerOffset - barHeight,
+			       height - outerOffset - innerOffset - barHeight,
 			       barLength * amountFilled,
 			       barHeight);
     };
 
     this.drawGameOver = function(canvasContext) {
-	var x = this.width_ / 4;
-	var y = this.height_ / 4;
+	var x = width / 4;
+	var y = height / 4;
 	canvasContext.font = 'normal 24px montserrat';
 	canvasContext.fillStyle = '#fff';
 	canvasContext.fillText('GAME OVER', x, y);
 	canvasContext.font = 'normal 16px montserrat';
-	canvasContext.fillText('Your final score is ' + this.score, x, y + 24);
+	canvasContext.fillText('Your final score is ' + score, x, y + 24);
     };
 }

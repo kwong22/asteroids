@@ -1,36 +1,36 @@
 function Game() {
 
-    this.FPS = 60;
-    this.DRAW_INTERVAL = 1000 / this.FPS;
-    var inputManager_ = new InputManager;
-    var map_;
-    var imageRepository_;
-    var canvas_;
-    var canvasContext_;
-    var canvasBuffer_;
-    var canvasBufferContext_;
+    var FPS = 60;
+    var DRAW_INTERVAL = 1000 / FPS;
+    var inputManager = new InputManager;
+    var map;
+    var imageRepository;
+    var canvas;
+    var canvasContext;
+    var canvasBuffer;
+    var canvasBufferContext;
 
-    this.gameLoop = null;
+    var gameLoop = null;
 
     this.initialize = function() {
 	
-	inputManager_.on('touchStart', document.game.handleTouchStart.bind(this));
-	inputManager_.on('touchMove', document.game.handleTouchMove.bind(this));
-	inputManager_.on('touchEnd', document.game.handleTouchEnd.bind(this));
+	inputManager.on('touchStart', document.game.handleTouchStart.bind(this));
+	inputManager.on('touchMove', document.game.handleTouchMove.bind(this));
+	inputManager.on('touchEnd', document.game.handleTouchEnd.bind(this));
 
-	imageRepository_ = new ImageRepository();
-	map_ = new Map(imageRepository_);
+	imageRepository = new ImageRepository();
+	map = new Map(imageRepository);
 
-	canvas_ = document.getElementById('game-canvas');
+	canvas = document.getElementById('game-canvas');
 
-	if (canvas_ && canvas_.getContext) {
+	if (canvas && canvas.getContext) {
 	    
-	    canvasContext_ = canvas_.getContext('2d');
+	    canvasContext = canvas.getContext('2d');
 
-	    canvasBuffer_ = document.createElement('canvas');
-	    canvasBuffer_.width = canvas_.width;
-	    canvasBuffer_.height = canvas_.height;
-	    canvasBufferContext_ = canvasBuffer_.getContext('2d');
+	    canvasBuffer = document.createElement('canvas');
+	    canvasBuffer.width = canvas.width;
+	    canvasBuffer.height = canvas.height;
+	    canvasBufferContext = canvasBuffer.getContext('2d');
 
 	    return true;
 	}
@@ -39,12 +39,9 @@ function Game() {
     };
 
     this.loadContent = function() {
-
-	// Load images
-	imageRepository_.loadContent();
-	map_.loadMap();
-
-	this.gameLoop = setInterval(this.runGameLoop, this.DRAW_INTERVAL);
+	imageRepository.loadContent();
+	map.loadMap();
+	gameLoop = setInterval(this.runGameLoop, DRAW_INTERVAL);
     };
 
     this.run = function() {
@@ -55,33 +52,30 @@ function Game() {
     };
 
     this.runGameLoop = function() {
-	if (map_.isLoaded && imageRepository_.loaded()) {
+	if (map.isLoaded && imageRepository.loaded()) {
 	    document.game.update();
 	    document.game.draw();
 	}
     };
 
     this.update = function() {
-
-	// Handle user input
-
-	map_.update();
+	map.update();
     };
     
     this.handleTouchStart = function(location) {
-	map_.aimBlaster(this.getCanvasCoordinates(location));
+	map.aimBlaster(this.getCanvasCoordinates(location));
     };
 
     this.handleTouchMove = function(location) {
-	map_.updateBlasterDirection(this.getCanvasCoordinates(location));
+	map.updateBlasterDirection(this.getCanvasCoordinates(location));
     };
 
     this.handleTouchEnd = function(location) {
-	map_.createBlast(this.getCanvasCoordinates(location));
+	map.createBlast(this.getCanvasCoordinates(location));
     };
 
     this.getCanvasCoordinates = function(clientLocation) {
-	var rect = canvas_.getBoundingClientRect();
+	var rect = canvas.getBoundingClientRect();
 	var x = clientLocation.x - rect.left;
 	var y = clientLocation.y - rect.top;
 
@@ -91,13 +85,13 @@ function Game() {
     this.draw = function() {
 	
 	// Clear canvas
-	canvasBufferContext_.clearRect(0, 0, canvas_.width, canvas_.height);
-	canvasContext_.clearRect(0, 0, canvas_.width, canvas_.height);
+	canvasBufferContext.clearRect(0, 0, canvas.width, canvas.height);
+	canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 
 	// Draw map to buffer
-	map_.draw(canvasBufferContext_);
+	map.draw(canvasBufferContext);
 
 	// Draw buffer on screen
-	canvasContext_.drawImage(canvasBuffer_, 0, 0);
+	canvasContext.drawImage(canvasBuffer, 0, 0);
     };
 }
