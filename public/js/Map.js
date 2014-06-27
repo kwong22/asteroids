@@ -59,16 +59,16 @@ function Map(imgRepository) {
 	startHitTime = 0;
 	wasHit = false;
 
-	startTime = (new Date).getTime();
-	currentTime = (new Date).getTime();
-	previousTime = (new Date).getTime();
+	startTime = (new Date()).getTime();
+	currentTime = (new Date()).getTime();
+	previousTime = (new Date()).getTime();
 	timeElapsed = 0;
-	
+
 	currentStage = 0;
 	this.startStage();
 
 	gameOver = false;
-	
+
 	this.isLoaded = true;
     };
 
@@ -151,7 +151,7 @@ function Map(imgRepository) {
 	this.updateBlasterDirection(location);
 	if (!isCharging && !isOverheated) {
 	    isCharging = true;
-	    startChargeTime = (new Date).getTime();
+	    startChargeTime = (new Date()).getTime();
 	}
     };
 
@@ -180,7 +180,7 @@ function Map(imgRepository) {
 	    if (currentHeat > maxHeat) {
 		currentHeat = maxHeat;
 		isOverheated = true;
-		startOverheatTime = (new Date).getTime();
+		startOverheatTime = (new Date()).getTime();
 	    }
 	}
 
@@ -192,7 +192,7 @@ function Map(imgRepository) {
     this.update = function() {
 
 	if (!gameOver) {
-	    currentTime = (new Date).getTime();
+	    currentTime = (new Date()).getTime();
 
 	    // Check if time limit has been reached
 	    timeElapsed = currentTime - startTime;
@@ -205,7 +205,7 @@ function Map(imgRepository) {
 	    var tfactor = dt / step;
 
 	    if (isCharging) {
-		if (startChargeTime != 0) {
+		if (startChargeTime !== 0) {
 		    if (currentTime - startChargeTime >= chargeThresholdTime) {
 			isCharged = true;
 			startChargeTime = 0;
@@ -214,7 +214,7 @@ function Map(imgRepository) {
 	    }
 
 	    if (isOverheated) {
-		if (!(currentTime - startOverheatTime < overheatDuration)) {
+		if (currentTime - startOverheatTime >= overheatDuration) {
 		    if (currentHeat >= cooldownRate * tfactor) {
 			currentHeat -= cooldownRate * tfactor;
 		    } else {
@@ -275,7 +275,7 @@ function Map(imgRepository) {
 		    a.y = player.y + temp.getY();
 
 		    player.shieldHealth--;
-		    startHitTime = (new Date).getTime();
+		    startHitTime = (new Date()).getTime();
 		    wasHit = true;
 		    if (player.shieldHealth < 1) player.isShielded = false;
 		}
@@ -296,7 +296,7 @@ function Map(imgRepository) {
 	    } else if (a.x - a.radius > width) {
 		a.x = -1 * a.radius;
 	    }
-	    
+
 	    a.updatePosition(fps, dt);
 	}
     };
@@ -316,9 +316,8 @@ function Map(imgRepository) {
 			var a1 = new Asteroid(new Position(a.x, a.y), new PolarVector(nv.r / Math.sqrt(2), nv.theta - splitAngle), nradius, a.health / 2);
 			var a2 = new Asteroid(new Position(a.x, a.y), new PolarVector(nv.r / Math.sqrt(2), nv.theta + splitAngle), nradius, a.health / 2);
 			asteroids.push(a1, a2);
-		    } else {
-			if (!gameOver) score++;
 		    }
+		    if (!gameOver) score++;
 
 		    asteroids.splice(j, 1);
 		    blasts.splice(i, 1);
@@ -337,7 +336,7 @@ function Map(imgRepository) {
 
     this.draw = function(canvasContext) {
 	// Draw background
-	var sprite = ImageRepository.sprites['bg'];
+	var sprite = ImageRepository.sprites.bg;
 	canvasContext.drawImage(sprite.img, 0, 0, sprite.w, sprite.h);
 
 	if (!gameOver) {
@@ -350,7 +349,7 @@ function Map(imgRepository) {
 		canvasContext.save(); // Save the current coordinate system
 		canvasContext.translate(b.x, b.y);
 		canvasContext.rotate(b.v.theta + Math.PI / 2);
-		sprite = ImageRepository.sprites['blast'];
+		sprite = ImageRepository.sprites.blast;
 		canvasContext.drawImage(sprite.img, sprite.cx, -1 * b.radius, sprite.w, sprite.h);
 		canvasContext.restore(); // Restore the original coordinate system
 	    }
@@ -377,9 +376,9 @@ function Map(imgRepository) {
 	    }
 
 	    // Draw asteroids
-	    for (var i = 0; i < asteroids.length; i++) {
-		var a = asteroids[i];
-		sprite = ImageRepository.sprites['asteroid'];
+	    for (var j = 0; j < asteroids.length; j++) {
+		var a = asteroids[j];
+		sprite = ImageRepository.sprites.asteroid;
 		var width = 2 * a.radius;
 		canvasContext.drawImage(sprite.img, a.x - a.radius, a.y - a.radius, width, width);
 	    }

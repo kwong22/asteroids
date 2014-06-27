@@ -1,8 +1,11 @@
 {
     "name": "Asteroids",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Asteroids game for the Koalah game platform",
     "main": "app.js",
+    "engines": {
+	"node": "0.10.x"
+    },
     "scripts": {
 	"test": "echo \"Error: no test specified\" && exit 1"
     },

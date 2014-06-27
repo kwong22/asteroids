@@ -2,7 +2,7 @@ function Game() {
 
     var FPS = 60;
     var DRAW_INTERVAL = 1000 / FPS;
-    var inputManager = new InputManager;
+    var inputManager = new InputManager();
     var map;
     var imageRepository;
     var canvas;
@@ -10,10 +10,12 @@ function Game() {
     var canvasBuffer;
     var canvasBufferContext;
 
+    var logBook, logId;
+
     var gameLoop = null;
 
     this.initialize = function() {
-	
+
 	inputManager.on('touchStart', document.game.handleTouchStart.bind(this));
 	inputManager.on('touchMove', document.game.handleTouchMove.bind(this));
 	inputManager.on('touchEnd', document.game.handleTouchEnd.bind(this));
@@ -23,8 +25,11 @@ function Game() {
 
 	canvas = document.getElementById('game-canvas');
 
+	logBook = [];
+	logId = 0;
+
 	if (canvas && canvas.getContext) {
-	    
+
 	    canvasContext = canvas.getContext('2d');
 
 	    canvasBuffer = document.createElement('canvas');
@@ -61,7 +66,7 @@ function Game() {
     this.update = function() {
 	map.update();
     };
-    
+
     this.handleTouchStart = function(location) {
 	map.aimBlaster(this.getCanvasCoordinates(location));
     };
@@ -72,6 +77,8 @@ function Game() {
 
     this.handleTouchEnd = function(location) {
 	map.createBlast(this.getCanvasCoordinates(location));
+	var entry = this.createLogEntry(this.getCanvasCoordinates(location));
+	logBook.push(entry);
     };
 
     this.getCanvasCoordinates = function(clientLocation) {
@@ -82,8 +89,24 @@ function Game() {
 	return new Position(x, y);
     };
 
+    this.createLogEntry = function(location) {
+	var entry = {
+	    '_id': logId++,
+	    'x': location.x,
+	    'y': location.y,
+	    'date': new Date()
+	};
+	return entry;
+    };
+
+    this.returnLogBook = function() {
+	for (var i = 0; i < logBook.length; i++) {
+	    console.log(logBook[i]);
+	}
+    };
+
     this.draw = function() {
-	
+
 	// Clear canvas
 	canvasBufferContext.clearRect(0, 0, canvas.width, canvas.height);
 	canvasContext.clearRect(0, 0, canvas.width, canvas.height);
