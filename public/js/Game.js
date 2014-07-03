@@ -10,43 +10,47 @@ function Game() {
     var canvasBuffer;
     var canvasBufferContext;
 
-    var logBook, logId;
-
+    var initialized = false;
     var gameLoop = null;
 
     this.initialize = function() {
 
-	inputManager.on('touchStart', document.game.handleTouchStart.bind(this));
-	inputManager.on('touchMove', document.game.handleTouchMove.bind(this));
-	inputManager.on('touchEnd', document.game.handleTouchEnd.bind(this));
+	if (!initialized) {
+	    inputManager.on('touchStart', document.game.handleTouchStart.bind(this));
+	    inputManager.on('touchMove', document.game.handleTouchMove.bind(this));
+	    inputManager.on('touchEnd', document.game.handleTouchEnd.bind(this));
 
-	imageRepository = new ImageRepository();
-	map = new Map(imageRepository);
+	    imageRepository = new ImageRepository();
+	    map = new Map(imageRepository);
 
-	canvas = document.getElementById('game-canvas');
+	    canvas = document.getElementById('game-canvas');
 
-	logBook = [];
-	logId = 0;
+	    if (canvas && canvas.getContext) {
 
-	if (canvas && canvas.getContext) {
+		canvasContext = canvas.getContext('2d');
 
-	    canvasContext = canvas.getContext('2d');
+		canvasBuffer = document.createElement('canvas');
+		canvasBuffer.width = canvas.width;
+		canvasBuffer.height = canvas.height;
+		canvasBufferContext = canvasBuffer.getContext('2d');
 
-	    canvasBuffer = document.createElement('canvas');
-	    canvasBuffer.width = canvas.width;
-	    canvasBuffer.height = canvas.height;
-	    canvasBufferContext = canvasBuffer.getContext('2d');
+		return true;
+	    }
 
+	    return false;
+
+	} else {
 	    return true;
 	}
-
-	return false;
     };
 
     this.loadContent = function() {
-	imageRepository.loadContent();
-	map.loadMap();
-	gameLoop = setInterval(this.runGameLoop, DRAW_INTERVAL);
+	if (!initialized && gameLoop !== undefined) {
+	    imageRepository.loadContent();
+	    map.loadMap();
+	    gameLoop = setInterval(this.runGameLoop, DRAW_INTERVAL);
+	    initialized = true;
+	}
     };
 
     this.run = function() {
@@ -77,8 +81,6 @@ function Game() {
 
     this.handleTouchEnd = function(location) {
 	map.createBlast(this.getCanvasCoordinates(location));
-	var entry = this.createLogEntry(this.getCanvasCoordinates(location));
-	logBook.push(entry);
     };
 
     this.getCanvasCoordinates = function(clientLocation) {
@@ -89,20 +91,12 @@ function Game() {
 	return new Position(x, y);
     };
 
-    this.createLogEntry = function(location) {
-	var entry = {
-	    '_id': logId++,
-	    'x': location.x,
-	    'y': location.y,
-	    'date': new Date()
-	};
-	return entry;
+    this.returnBlastLogBook = function() {
+	map.returnBlastLogBook();
     };
 
-    this.returnLogBook = function() {
-	for (var i = 0; i < logBook.length; i++) {
-	    console.log(logBook[i]);
-	}
+    this.returnHitLogBook = function() {
+	map.returnHitLogBook();
     };
 
     this.draw = function() {

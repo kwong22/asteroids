@@ -5,6 +5,10 @@ function Map(imgRepository) {
     var width = 300;
     var height = 400;
     var player = null;
+    var blastLogBook = [];
+    var hitLogBook = [];
+    var blastLogId = 0;
+    var hitLogId = 0;
 
     var chargeThresholdTime = 1000;
     var startChargeTime = 0;
@@ -47,6 +51,11 @@ function Map(imgRepository) {
 	var shieldRadius = 32;
 	var shieldHealth = 4;
 	player = new Player(new Position(playerX, playerY), playerRadius, shieldRadius, shieldHealth, 3 * Math.PI / 2);
+
+	blastLogBook = [];
+	hitLogBook = [];
+	blastLogId = 0;
+	hitLogId = 0;
 
 	startChargeTime = 0;
 	isCharging = false;
@@ -175,6 +184,7 @@ function Map(imgRepository) {
 	    }
 
 	    blasts.push(new Blast(new Position(player.x, player.y), player.direction, chargeFrac));
+	    this.addToBlastLogBook(location);
 
 	    currentHeat += blastHeat;
 	    if (currentHeat > maxHeat) {
@@ -187,6 +197,46 @@ function Map(imgRepository) {
 	isCharged = false;
 	isCharging = false;
 	startChargeTime = 0;
+    };
+
+    this.createBlastLogEntry = function(location) {
+	var entry = {
+	    '_id': blastLogId++,
+	    'x': location.x,
+	    'y': location.y,
+	    'date': new Date()
+	};
+	return entry;
+    };
+
+    this.createHitLogEntry = function(location) {
+	var entry = {
+	    '_id': hitLogId++,
+	    'x': location.x,
+	    'y': location.y,
+	    'date': new Date()
+	};
+	return entry;
+    };
+
+    this.addToBlastLogBook = function(location) {
+	blastLogBook.push(this.createBlastLogEntry(location));
+    };
+
+    this.addToHitLogBook = function(location) {
+	hitLogBook.push(this.createHitLogEntry(location));
+    };
+
+    this.returnBlastLogBook = function() {
+	for (var i = 0; i < blastLogBook.length; i++) {
+	    console.log(blastLogBook[i]);
+	}
+    };
+
+    this.returnHitLogBook = function() {
+	for (var i = 0; i < hitLogBook.length; i++) {
+	    console.log(hitLogBook[i]);
+	}
     };
 
     this.update = function() {
@@ -308,6 +358,7 @@ function Map(imgRepository) {
 	    for (var j = asteroids.length - 1; j >= 0; j--) {
 		var a = asteroids[j];
 		if (distanceBetween(b.x, b.y, a.x, a.y) < b.radius + a.radius) {
+		    this.addToHitLogBook(new Position(a.x, a.y));
 		    var resultant = addMomentums(a.mass, a.v, b.mass, b.v);
 		    var nv = new PolarVector(resultant.r / a.mass, resultant.theta);
 		    if (a.health > 1) {
