@@ -246,7 +246,9 @@ function Map(imgRepository) {
 
 	    // Check if time limit has been reached
 	    timeElapsed = currentTime - startTime;
-	    if (timeElapsed >= TIME_LIMIT) gameOver = true;
+	    if (timeElapsed >= TIME_LIMIT) {
+		this.endGame();
+	    }
 
 	    // For time-based intervals, does not depend on frame rate
 	    var fps = 60; // The frame rate that the game is based on
@@ -331,7 +333,7 @@ function Map(imgRepository) {
 		}
 	    } else if (!gameOver) {
 		if (distanceBetween(player.x, player.y, a.x, a.y) < player.radius + a.radius) {
-		    gameOver = true;
+		    this.endGame();
 		}
 	    }
 
@@ -384,6 +386,10 @@ function Map(imgRepository) {
 	}
     };
 
+    this.endGame = function() {
+	gameOver = true;
+	this.postScore();
+    };
 
     this.draw = function(canvasContext) {
 	// Draw background
@@ -556,5 +562,20 @@ function Map(imgRepository) {
 	canvasContext.fillText('GAME OVER', x, y);
 	canvasContext.font = 'normal 16px montserrat';
 	canvasContext.fillText('Your final score is ' + score, x, y + 24);
+    };
+
+    this.postScore = function() {
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', '/games/end/asteroids', true);
+	xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+	xhr.onload = function() {
+	    var parsedJSON = JSON.parse(this.responseText);
+	    if (parsedJSON.success) {
+		console.log('Score was successfully posted');
+	    } else {
+		console.log('Failed to post score with error: ' + parsedJSON.error);
+	    }
+	};
+	xhr.send('score=' + score);
     };
 }
