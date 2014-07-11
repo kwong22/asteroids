@@ -5,6 +5,8 @@
 
 function InputManager() {
     this.events = {};
+    this.useMouse = true;
+    this.mouseDown = false;
 
     if (window.navigator.msPointerEnabled) {
 	this.eventTouchstart = 'MSPointerDown';
@@ -42,6 +44,42 @@ InputManager.prototype.listen = function() {
     var touchStartClientX, touchStartClientY;
     var gameCanvas = document.getElementById("game-canvas");
 
+    if (this.useMouse) {
+	var clientX, clientY;
+
+	gameCanvas.addEventListener('mousedown', function(event) {
+	    clientX = event.pageX;
+	    clientY = event.pageY;
+	    
+	    this.mouseDown = true;
+
+	    self.emit('touchStart', new Position(clientX, clientY));
+
+	    event.preventDefault();
+	});
+
+	gameCanvas.addEventListener('mousemove', function(event) {
+	    clientX = event.pageX;
+	    clientY = event.pageY;
+
+	    self.emit('touchMove', new Position(clientX, clientY));
+
+	    event.preventDefault();
+	});
+
+	gameCanvas.addEventListener('mouseup', function(event) {
+	    clientX = event.pageX;
+	    clientY = event.pageY;
+
+	    if (this.mouseDown) {
+		self.emit('touchEnd', new Position(clientX, clientY));
+	    }
+
+	    this.mouseDown = false;
+	    event.preventDefault();
+	});
+    }
+
     gameCanvas.addEventListener(this.eventTouchstart, function(event) {
 	if ((!window.navigator.msPointerEnabled && event.touches.length > 1) || event.targetTouches > 1) {
 	    return; // Ignore if touching with more than 1 finger
@@ -56,7 +94,6 @@ InputManager.prototype.listen = function() {
 	}
 
 	self.emit('touchStart', new Position(touchStartClientX, touchStartClientY));
-	
 	event.preventDefault();
     });
 
