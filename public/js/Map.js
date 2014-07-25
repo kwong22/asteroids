@@ -2,6 +2,7 @@ function Map(imgRepository) {
     var score = 0;
     var asteroids = [];
     var blasts = [];
+    var floaters = [];
     var width = 300;
     var height = 400;
     var player = null;
@@ -82,8 +83,8 @@ function Map(imgRepository) {
     };
 
     this.startStage = function() {
-	if (asteroids.length > 0) this.clearAsteroids();
-	if (blasts.length > 0) this.clearBlasts();
+	if (asteroids.length > 0) asteroids.clear();
+	if (blasts.length > 0) blasts.clear();
 
 	var totalHealth = currentStage + 1;
 	var remainingHealth = totalHealth;
@@ -144,16 +145,8 @@ function Map(imgRepository) {
 	asteroids.push(new Asteroid(new Position(x, y), new PolarVector(speed, angle), radius, health));
     };
 
-    this.clearAsteroids = function() {
-	for (var i = asteroids.length - 1; i >= 0; i--) {
-	    asteroids.splice(i, 1);
-	}
-    };
-
-    this.clearBlasts = function() {
-	for (var i = blasts.length - 1; i >= 0; i--) {
-	    blasts.splice(i, 1);
-	}
+    this.spawnFloater = function(position) {
+        floaters.push(new Floater(position, 0.5, '+1', '#fff', 500));
     };
 
     this.aimBlaster = function(location) {
@@ -292,6 +285,8 @@ function Map(imgRepository) {
 
 	    this.updateBlasts(fps, dt);
 
+            this.updateFloaters(fps, dt);
+
 	    // Check if stage has been completed
 	    if (asteroids.length < 1) {
 		currentStage++;
@@ -374,6 +369,7 @@ function Map(imgRepository) {
 
 		    asteroids.splice(j, 1);
 		    blasts.splice(i, 1);
+                    this.spawnFloater(new Position(a.x, a.y));
 		}
 	    }
 	    if ((b.y + b.radius < 0) ||
@@ -384,6 +380,16 @@ function Map(imgRepository) {
 	    }
 	    b.updatePosition(fps, dt);
 	}
+    };
+
+    this.updateFloaters = function (fps, dt) {
+        for (var i = floaters.length - 1; i >= 0; i--) {
+            var f = floaters[i];
+            f.update(fps, dt);
+            if (f.isFinished) {
+                floaters.splice(i, 1);
+            }
+        }
     };
 
     this.endGame = function() {
@@ -439,6 +445,8 @@ function Map(imgRepository) {
 		var width = 2 * a.radius;
 		canvasContext.drawImage(sprite.img, a.x - a.radius, a.y - a.radius, width, width);
 	    }
+
+            this.drawFloaters(canvasContext);
 
 	    // Draw score
 	    this.drawScore(canvasContext);
@@ -554,6 +562,12 @@ function Map(imgRepository) {
 			       height - outerOffset - innerOffset - barHeight,
 			       barLength * amountFilled,
 			       barHeight);
+    };
+
+    this.drawFloaters = function(canvasContext) {
+        for (var i = 0; i < floaters.length; i++) {
+            floaters[i].render(canvasContext);
+        }
     };
 
     this.drawGameOver = function(canvasContext) {

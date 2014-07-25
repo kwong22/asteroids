@@ -44,3 +44,35 @@ function Player(position, radius, shieldRadius, shieldHealth, direction) {
     this.isShielded = (this.shieldHealth > 0);
     this.direction = direction;
 }
+
+function Floater(position, speed, text,
+                 color, duration) {
+    this.position = position;
+    this.speed = speed;
+    this.text = text;
+    this.color = color;
+    this.startTime = (new Date()).getTime();
+    this.timeElapsed = 0;
+    this.duration = duration;
+    this.isFinished = false;
+}
+
+Floater.prototype.update = function (fps, dt) {
+    var currentTime = (new Date()).getTime();
+    this.timeElapsed = currentTime - this.startTime;
+
+    if (this.timeElapsed >= this.duration) {
+        this.isFinished = true;
+    }
+
+    var step = 1000 / fps;
+    this.position.y -= this.speed * dt / step;
+};
+
+Floater.prototype.render = function (canvasContext) {
+    canvasContext.font = 'normal 16px montserrat';
+    canvasContext.fillStyle = this.color;
+    canvasContext.globalAlpha = (this.duration - this.timeElapsed) / this.duration;
+    canvasContext.fillText(this.text, this.position.x, this.position.y);
+    canvasContext.globalAlpha = 1;
+};

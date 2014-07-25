@@ -1,3 +1,9 @@
+Array.prototype.clear = function () {
+    for (var i = this.length - 1; i >= 0; i--) {
+	this.splice(i, 1);
+    }
+};
+
 function Position(x, y) {
     this.x = x;
     this.y = y;
