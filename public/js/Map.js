@@ -512,14 +512,16 @@ function Map(imgRepository) {
 
     this.drawShieldHealth = function(canvasContext) {
 	var outerOffset = 8;
-	var innerOffset = 4;
+	var innerOffset = 0;
 	var barHeight = 20;
-	var barWidth = 8;
+	var barWidth = 20;
+        var sprite = ImageRepository.sprites.ship;
 
 	for (var i = 0; i < player.shieldHealth; i++) {
 	    var x = width - (outerOffset + barWidth + i * (innerOffset + barWidth));
-	    canvasContext.fillStyle = '#fff';
-	    canvasContext.fillRect(x, outerOffset, barWidth, barHeight);
+            canvasContext.drawImage(sprite.img, x, outerOffset, barWidth, barHeight);
+	    //canvasContext.fillStyle = '#fff';
+	    //canvasContext.fillRect(x, outerOffset, barWidth, barHeight);
 	}
     };
 

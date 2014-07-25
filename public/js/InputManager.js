@@ -94,6 +94,7 @@ InputManager.prototype.listen = function() {
 	}
 
 	self.emit('touchStart', new Position(touchStartClientX, touchStartClientY));
+
 	event.preventDefault();
     });
 
