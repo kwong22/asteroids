@@ -49,13 +49,7 @@ function addMomentums(m1, v1, m2, v2) {
 }
 
 function determineAngle(dx, dy) {
-    var theta;
-    if (dx > 0) {
-        theta = (Math.atan(dy / dx)) % (2 * Math.PI); // The codomain of atan is -pi/2 to pi/2
-    } else {
-	theta = (Math.PI + Math.atan(dy / dx)) % (2 * Math.PI);
-    }
-    return theta;
+    return Math.atan2(dy, dx) % (2 * Math.PI);
 }
 
 function determineAngleBetweenVectors(v1, v2) {
