@@ -80,3 +80,35 @@ Floater.prototype.render = function (canvasContext) {
 function Particle(x, y) {
     this.position = new Position(x, y);
 }
+
+function Rumble() {
+    this.startTime = 0;
+    this.duration = 0;
+    this.maxAmp = 4;
+    this.x = 0;
+    this.y = 0;
+    this.active = false;
+}
+
+Rumble.prototype.activate = function (duration) {
+    this.startTime = (new Date()).getTime();
+    this.duration = duration;
+    this.active = true;
+};
+
+Rumble.prototype.update = function (fps, dt) {
+    if (this.active) {
+        var currentTime = (new Date()).getTime();
+        var timeElapsed = currentTime - this.startTime;
+
+        if (timeElapsed < this.duration) {
+            var step = 1000 / fps;
+            var rand = Math.random() * 2 * Math.PI;
+            var vec = new PolarVector(this.maxAmp * (this.duration - timeElapsed) / this.duration, rand);
+            this.x = vec.getX() * dt / step;
+            this.y = vec.getY() * dt / step;
+        } else {
+            this.active = false;
+        }
+    }
+};

@@ -7,6 +7,7 @@ function Map(imgRepository) {
     var blasts = [];
     var floaters = [];
     var particles = [];
+    var rumble = new Rumble();
     var width = 300;
     var height = 400;
     var player = null;
@@ -218,6 +219,12 @@ function Map(imgRepository) {
         }
     };
 
+    this.createRumble = function (duration) {
+        if (!rumble.active) {
+            rumble.activate(duration);
+        }
+    };
+
     this.createBlastLogEntry = function(location) {
 	var entry = {
 	    '_id': blastLogId++,
@@ -307,6 +314,7 @@ function Map(imgRepository) {
 		}
 	    }
 
+            rumble.update(fps, dt);
 	    this.updateAsteroids(fps, dt);
 	    this.updateBlasts(fps, dt);
             this.updateFloaters(fps, dt);
@@ -351,6 +359,8 @@ function Map(imgRepository) {
                     var collPos = new Position(player.x + collVec.getX(), player.y + collVec.getY());
                     this.emitParticles(collPos, new PolarVector(1, theta), 5, 10, '#f00');
 
+                    this.createRumble(400);
+
 		    player.shieldHealth--;
 		    startHitTime = (new Date()).getTime();
 		    wasHit = true;
@@ -394,11 +404,14 @@ function Map(imgRepository) {
 			var a1 = new Asteroid(new Position(a.x, a.y), new PolarVector(nv.r / Math.sqrt(2), nv.theta - splitAngle), nradius, a.health / 2);
 			var a2 = new Asteroid(new Position(a.x, a.y), new PolarVector(nv.r / Math.sqrt(2), nv.theta + splitAngle), nradius, a.health / 2);
 			asteroids.push(a1, a2);
-		    }
+                        this.emitParticles(new Position(a.x, a.y), new PolarVector(1, b.direction), 5, 5, '#fff');
+		    } else {
+                        this.emitParticles(new Position(a.x, a.y), new PolarVector(1, b.direction), 5, 15, '#fff');
+                    }
 		    if (!gameOver) score++;
 
-                    this.emitParticles(new Position(a.x, a.y), new PolarVector(1, b.direction), 5, 25, '#fff');
                     this.spawnFloater(new Position(a.x, a.y));
+                    this.createRumble(200);
 		    asteroids.splice(j, 1);
 		    blasts.splice(i, 1);
 		}
@@ -454,6 +467,10 @@ function Map(imgRepository) {
 	canvasContext.drawImage(sprite.img, 0, 0, sprite.w, sprite.h);
 
 	if (!gameOver) {
+            if (rumble.active) {
+                canvasContext.translate(rumble.x, rumble.y);
+            }
+
 	    // Draw charge meter
 	    this.drawChargeMeter(canvasContext);
 
@@ -499,7 +516,12 @@ function Map(imgRepository) {
 
             this.drawFloaters(canvasContext);
             this.drawParticles(canvasContext);
-	    this.drawScore(canvasContext);
+
+            if (rumble.active) {
+                canvasContext.translate(-1 * rumble.x, -1 * rumble.y);
+            }
+
+            this.drawScore(canvasContext);
 	    this.drawTimeLeft(canvasContext);
 	    this.drawHeatMeter(canvasContext);
 
@@ -535,12 +557,14 @@ function Map(imgRepository) {
 	    canvasContext.lineTo(player.x + v1.getX(), player.y + v1.getY());
 	    canvasContext.lineTo(player.x + v2.getX(), player.y + v2.getY());
 	    canvasContext.closePath();
+            canvasContext.globalAlpha = 0.5;
 	    canvasContext.fillStyle = '#fff';
 	    canvasContext.fill();
 
 	    canvasContext.beginPath();
 	    canvasContext.arc(player.x, player.y, player.shieldRadius - innerOffset, (player.direction - sideAngle) % (2 * Math.PI), (player.direction + sideAngle) % (2 * Math.PI));
 	    canvasContext.fill();
+            canvasContext.globalAlpha = 1;
 	}
     };
 
