@@ -1,8 +1,12 @@
+/**
+  * Thanks to http://hakim.se for the particles code
+  */
 function Map(imgRepository) {
     var score = 0;
     var asteroids = [];
     var blasts = [];
     var floaters = [];
+    var particles = [];
     var width = 300;
     var height = 400;
     var player = null;
@@ -192,6 +196,28 @@ function Map(imgRepository) {
 	startChargeTime = 0;
     };
 
+    /**
+      * Emits a random number of particles from a set point.
+      *
+      * @param position The point where particles will be
+      * emitted from
+      * @param spread The pixel spread of the emittal
+      */
+    this.emitParticles = function (position, direction, spread, seed, color) {
+        var q = seed + (Math.random() * seed);
+
+        while(--q >= 0) {
+            var p = new Particle();
+            p.position.x = position.x + (Math.sin(q) * spread);
+            p.position.y = position.y + (Math.cos(q) * spread);
+            p.velocity = {x: direction.getX() + (-1 + Math.random() * 2), y: direction.getY() + (-1 + Math.random() * 2)};
+            p.alpha = 1;
+            p.color = color;
+
+            particles.push(p);
+        }
+    };
+
     this.createBlastLogEntry = function(location) {
 	var entry = {
 	    '_id': blastLogId++,
@@ -282,10 +308,9 @@ function Map(imgRepository) {
 	    }
 
 	    this.updateAsteroids(fps, dt);
-
 	    this.updateBlasts(fps, dt);
-
             this.updateFloaters(fps, dt);
+            this.updateParticles(fps, dt);
 
 	    // Check if stage has been completed
 	    if (asteroids.length < 1) {
@@ -320,6 +345,11 @@ function Map(imgRepository) {
 		    var temp = new PolarVector(player.shieldRadius + a.radius, theta);
 		    a.x = player.x + temp.getX();
 		    a.y = player.y + temp.getY();
+
+                    // Add particle effect
+                    var collVec = new PolarVector(player.shieldRadius, theta);
+                    var collPos = new Position(player.x + collVec.getX(), player.y + collVec.getY());
+                    this.emitParticles(collPos, new PolarVector(1, theta), 5, 10, '#f00');
 
 		    player.shieldHealth--;
 		    startHitTime = (new Date()).getTime();
@@ -367,9 +397,10 @@ function Map(imgRepository) {
 		    }
 		    if (!gameOver) score++;
 
+                    this.emitParticles(new Position(a.x, a.y), new PolarVector(1, b.direction), 5, 25, '#fff');
+                    this.spawnFloater(new Position(a.x, a.y));
 		    asteroids.splice(j, 1);
 		    blasts.splice(i, 1);
-                    this.spawnFloater(new Position(a.x, a.y));
 		}
 	    }
 	    if ((b.y + b.radius < 0) ||
@@ -388,6 +419,26 @@ function Map(imgRepository) {
             f.update(fps, dt);
             if (f.isFinished) {
                 floaters.splice(i, 1);
+            }
+        }
+    };
+
+    this.updateParticles = function (fps, dt) {
+        var step = 1000 / fps;
+
+        for (var i = 0; i < particles.length; i++) {
+            var p = particles[i];
+
+            // Apply velocity to the particle
+            p.position.x += p.velocity.x * dt / step;
+            p.position.y += p.velocity.y * dt / step;
+
+            // Fade out
+            p.alpha -= 0.02 * dt / step;
+
+            // If the particle is faded out to less than zero, remove it
+            if(p.alpha <= 0) {
+                particles.splice(i, 1);
             }
         }
     };
@@ -447,20 +498,15 @@ function Map(imgRepository) {
 	    }
 
             this.drawFloaters(canvasContext);
-
-	    // Draw score
+            this.drawParticles(canvasContext);
 	    this.drawScore(canvasContext);
-
-	    // Draw time left
 	    this.drawTimeLeft(canvasContext);
+	    this.drawHeatMeter(canvasContext);
 
 	    // Draw shield health
 	    if (player.isShielded) {
 		this.drawShieldHealth(canvasContext);
 	    }
-
-	    // Draw heat meter
-	    this.drawHeatMeter(canvasContext);
 	} else {
 	    this.drawGameOver(canvasContext);
 	}
@@ -567,6 +613,17 @@ function Map(imgRepository) {
     this.drawFloaters = function(canvasContext) {
         for (var i = 0; i < floaters.length; i++) {
             floaters[i].render(canvasContext);
+        }
+    };
+
+    this.drawParticles = function (canvasContext) {
+        var size = 1;
+        for (var i = 0; i < particles.length; i++) {
+            var p = particles[i];
+            canvasContext.globalAlpha = Math.max(p.alpha, 0);
+            canvasContext.fillStyle = p.color;
+            canvasContext.fillRect(p.position.x, p.position.y, size, size);
+            canvasContext.globalAlpha = 1;
         }
     };
 

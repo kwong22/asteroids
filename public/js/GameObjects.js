@@ -76,3 +76,7 @@ Floater.prototype.render = function (canvasContext) {
     canvasContext.fillText(this.text, this.position.x, this.position.y);
     canvasContext.globalAlpha = 1;
 };
+
+function Particle(x, y) {
+    this.position = new Position(x, y);
+}
