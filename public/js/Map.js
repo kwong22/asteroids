@@ -91,12 +91,12 @@ function Map(imgRepository) {
 	if (asteroids.length > 0) asteroids.clear();
 	if (blasts.length > 0) blasts.clear();
 
-	var totalHealth = currentStage + 1;
+	var totalHealth = 2 * (currentStage + 1);
 	var remainingHealth = totalHealth;
 	var numLevels = 2; // The number of different asteroid levels
 	var basicSize = 8;
 	var sizeRange = 2;
-	var basicSpeed = 1;
+	var basicSpeed = 1.5;
 	var speedRange = 0.25;
 
 	while (remainingHealth > 0) {
@@ -598,8 +598,6 @@ function Map(imgRepository) {
 	for (var i = 0; i < player.shieldHealth; i++) {
 	    var x = width - (outerOffset + barWidth + i * (innerOffset + barWidth));
             canvasContext.drawImage(sprite.img, x, outerOffset, barWidth, barHeight);
-	    //canvasContext.fillStyle = '#fff';
-	    //canvasContext.fillRect(x, outerOffset, barWidth, barHeight);
 	}
     };
 

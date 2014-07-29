@@ -40,6 +40,12 @@ InputManager.prototype.emit = function(event, data) {
 InputManager.prototype.listen = function() {
     var self = this;
 
+    // Respond to button to start game
+    var button = document.getElementById("play-button");
+    button.addEventListener('click', function (event) {
+        self.emit('startGame');
+    });
+
     // Respond to swipe events
     var touchStartClientX, touchStartClientY;
     var gameCanvas = document.getElementById("game-canvas");
@@ -50,7 +56,7 @@ InputManager.prototype.listen = function() {
 	gameCanvas.addEventListener('mousedown', function(event) {
 	    clientX = event.pageX;
 	    clientY = event.pageY;
-	    
+
 	    this.mouseDown = true;
 
 	    self.emit('touchStart', new Position(clientX, clientY));
@@ -88,7 +94,7 @@ InputManager.prototype.listen = function() {
 	if (window.navigator.msPointerEnabled) {
 	    touchStartClientX = event.pageX;
 	    touchStartClientY = event.pageY;
-	} else {	
+	} else {
 	    touchStartClientX = event.touches[0].clientX;
 	    touchStartClientY = event.touches[0].clientY;
 	}

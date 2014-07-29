@@ -11,6 +11,7 @@ function Game() {
     var canvasBufferContext;
 
     var initialized = false;
+    var started = false;
     var gameLoop = null;
 
     this.initialize = function() {
@@ -19,6 +20,7 @@ function Game() {
 	    inputManager.on('touchStart', document.game.handleTouchStart.bind(this));
 	    inputManager.on('touchMove', document.game.handleTouchMove.bind(this));
 	    inputManager.on('touchEnd', document.game.handleTouchEnd.bind(this));
+            inputManager.on('startGame', document.game.handleStart.bind(this));
 
 	    imageRepository = new ImageRepository();
 	    map = new Map(imageRepository);
@@ -55,8 +57,7 @@ function Game() {
 
     this.run = function() {
 	if (this.initialize()) {
-	    // If initialization was successful, load content
-	    this.loadContent();
+            this.draw();
 	}
     };
 
@@ -72,15 +73,28 @@ function Game() {
     };
 
     this.handleTouchStart = function(location) {
-	map.aimBlaster(this.getCanvasCoordinates(location));
+        if (started) {
+	    map.aimBlaster(this.getCanvasCoordinates(location));
+        }
     };
 
     this.handleTouchMove = function(location) {
-	map.updateBlasterDirection(this.getCanvasCoordinates(location));
+        if (started) {
+	    map.updateBlasterDirection(this.getCanvasCoordinates(location));
+        }
     };
 
     this.handleTouchEnd = function(location) {
-	map.createBlast(this.getCanvasCoordinates(location));
+        if (started) {
+	    map.createBlast(this.getCanvasCoordinates(location));
+        }
+    };
+
+    this.handleStart = function () {
+        if (!started) {
+            started = true;
+            this.loadContent();
+        }
     };
 
     this.getCanvasCoordinates = function(clientLocation) {
@@ -100,15 +114,22 @@ function Game() {
     };
 
     this.draw = function() {
+        if (!started) {
+            canvasContext.fillStyle = '#000';
+            canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+            canvasContext.font = 'normal 16px montserrat';
+            canvasContext.fillStyle = '#fff';
+            canvasContext.fillText('Press the Play button to start', 64, canvas.height / 2);
+        } else {
+	    // Clear canvas
+	    canvasBufferContext.clearRect(0, 0, canvas.width, canvas.height);
+	    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
 
-	// Clear canvas
-	canvasBufferContext.clearRect(0, 0, canvas.width, canvas.height);
-	canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+	    // Draw map to buffer
+	    map.draw(canvasBufferContext);
 
-	// Draw map to buffer
-	map.draw(canvasBufferContext);
-
-	// Draw buffer on screen
-	canvasContext.drawImage(canvasBuffer, 0, 0);
+	    // Draw buffer on screen
+	    canvasContext.drawImage(canvasBuffer, 0, 0);
+        }
     };
 }

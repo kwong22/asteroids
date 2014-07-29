@@ -22,7 +22,7 @@ function Blast(position, direction, chargeFrac) {
     this.chargeFrac = chargeFrac;
 
     this.radius = 2;
-    this.v = new PolarVector(2 + 6 * chargeFrac, this.direction);
+    this.v = new PolarVector(2.5 + 7.5 * chargeFrac, this.direction);
 
     this.density = 4;
     this.mass = this.density * Math.pow(this.radius, 3);
