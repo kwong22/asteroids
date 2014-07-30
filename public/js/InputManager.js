@@ -41,14 +41,16 @@ InputManager.prototype.listen = function() {
     var self = this;
 
     // Respond to button to start game
-    var button = document.getElementById("play-button");
+    var button = document.getElementById('play-btn');
+    var modal = document.getElementById('start-modal');
     button.addEventListener('click', function (event) {
+        modal.style.display = 'none';
         self.emit('startGame');
     });
 
     // Respond to swipe events
     var touchStartClientX, touchStartClientY;
-    var gameCanvas = document.getElementById("game-canvas");
+    var gameCanvas = document.getElementById('game-canvas');
 
     if (this.useMouse) {
 	var clientX, clientY;

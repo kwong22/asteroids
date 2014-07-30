@@ -1,0 +1,35 @@
+.container {
+    margin: 0 auto;
+    width: 300px;
+}
+
+#start-modal {
+    color: #fff;
+    display: inline-block;
+    font: normal 16px/1em montserrat, sans-serif;
+    margin-top: 64px;
+    padding-left: 10px;
+    position: absolute;
+    width: 290px;
+}
+
+.btn-area {
+    margin-top: 16px;
+    text-align: center;
+}
+
+#play-btn {
+    background-color: #2db01f;
+    border: solid 1px #0a6d00;
+    border-radius: 4px;
+    font: normal 16px/1em montserrat, helvetica, sans-serif;
+    padding: 6px 12px;
+}
+
+#play-btn:hover {
+    background-color: #4dbe41;
+}
+
+.footer {
+    text-align: center;
+}

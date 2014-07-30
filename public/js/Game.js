@@ -117,9 +117,6 @@ function Game() {
         if (!started) {
             canvasContext.fillStyle = '#000';
             canvasContext.fillRect(0, 0, canvas.width, canvas.height);
-            canvasContext.font = 'normal 16px montserrat';
-            canvasContext.fillStyle = '#fff';
-            canvasContext.fillText('Press the Play button to start', 64, canvas.height / 2);
         } else {
 	    // Clear canvas
 	    canvasBufferContext.clearRect(0, 0, canvas.width, canvas.height);

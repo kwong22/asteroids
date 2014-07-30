@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8">
     <title>Asteroids</title>
-    <link href="//fonts.googleapis.com/css?family=Montserrat" rel="stylesheet" type="text/css">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="//fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
   </head>
   <body>
@@ -11,14 +12,18 @@
       <div class="header">
       </div>
 
-      <div class="instructions">
-        Protect your ship from incoming asteroids! Tap the screen to shoot.
-        Tap and hold to shoot more powerful blasts.
-        Destroy as many asteroids as you can.
-      </div>
+      <div id="start-modal">
+        <h1>Asteroids</h1>
+        <div class="instructions">
+            Protect your ship from incoming asteroids!
+            Tap the screen to shoot.
+            Tap and hold to shoot more powerful blasts.
+            Destroy as many asteroids as you can.
+        </div>
 
-      <div>
-        <button id="play-button">Play</button>
+        <div class="btn-area">
+          <button id="play-btn">Play</button>
+        </div>
       </div>
 
       <div class="game-container">
